@@ -60,6 +60,11 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.sonarsource.scanner.maven</groupId>
+			<artifactId>sonar-maven-plugin</artifactId>
+			<version>5.1.0.4751</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -87,6 +92,11 @@
 						</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+			 <plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>yourPluginVersion</version>
 			</plugin>
 		</plugins>
 	</build>
