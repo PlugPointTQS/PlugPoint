@@ -14,9 +14,10 @@ import tqs.plugpoint.backend.services.ChargingStationService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.ArgumentMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ChargingStationController.class)
@@ -42,6 +43,74 @@ class ChargingStationControllerTest {
                 .status(Status.ACTIVE)
                 .createdAt(LocalDateTime.now())
                 .build();
+    }
+
+    @Test
+    void testGetAllStations() throws Exception {
+        Mockito.when(service.getAllStations()).thenReturn(List.of(sampleStation()));
+
+        mockMvc.perform(get("/api/stations"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").value("Aveiro EV"));
+    }
+
+    @Test
+    void testGetStationById_found() throws Exception {
+        Mockito.when(service.getById(1L)).thenReturn(Optional.of(sampleStation()));
+
+        mockMvc.perform(get("/api/stations/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1));
+    }
+
+    @Test
+    void testGetStationById_notFound() throws Exception {
+        Mockito.when(service.getById(99L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/stations/99"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testCreateStation_success() throws Exception {
+        ChargingStation station = sampleStation();
+        Mockito.when(service.nameExists(station.getName())).thenReturn(false);
+        Mockito.when(service.createStation(any())).thenReturn(station);
+
+        mockMvc.perform(post("/api/stations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(station)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Aveiro EV"));
+    }
+
+    @Test
+    void testCreateStation_duplicateName() throws Exception {
+        ChargingStation station = sampleStation();
+        Mockito.when(service.nameExists(station.getName())).thenReturn(true);
+
+        mockMvc.perform(post("/api/stations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(station)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Station name already exists."));
+    }
+
+    @Test
+    void testGetByOperator() throws Exception {
+        Mockito.when(service.getStationsByOperator(1L)).thenReturn(List.of(sampleStation()));
+
+        mockMvc.perform(get("/api/stations/operator/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].operatorId").value(1));
+    }
+
+    @Test
+    void testDeleteStation() throws Exception {
+        Mockito.doNothing().when(service).deleteStation(1L);
+
+        mockMvc.perform(delete("/api/stations/1"))
+                .andExpect(status().isNoContent());
     }
 
     @Test
