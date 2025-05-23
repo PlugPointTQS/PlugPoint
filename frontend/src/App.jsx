@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './App.css'; // Arquivo CSS separado
@@ -7,13 +7,22 @@ function App() {
   const [userType, setUserType] = useState('driver');
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
+    const [stations, setStations] = useState([]);
+
 
   // Coordenadas de exemplo (Lisboa)
   const position = [38.736946, -9.142685];
-  const stations = [
-    { id: 1, name: "Estação Central", position: [38.736946, -9.142685], available: true },
-    { id: 2, name: "Estação Norte", position: [38.746946, -9.152685], available: false },
-  ];
+
+  useEffect(() => {
+    fetch('http://localhost:8080/api/stations')
+      .then(response => response.json())
+      .then(data => {
+        setStations(data);
+      })
+      .catch(error => {
+        console.error("Erro ao buscar estações:", error);
+      });
+  }, []);
 
   return (
     <div className="app-container">
@@ -61,10 +70,13 @@ function App() {
           />
           
           {stations.map(station => (
-            <Marker key={station.id} position={station.position}>
+            <Marker
+              key={station.id}
+              position={[station.latitude, station.longitude]}
+            >
               <Popup>
-                {station.name} <br /> 
-                {station.available ? "Available" : "Ocupied "}
+                {station.name} <br />
+                {station.status === "ACTIVE" ? "Available" : "Unavailable"}
               </Popup>
             </Marker>
           ))}
