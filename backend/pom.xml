@@ -70,6 +70,19 @@
 			<artifactId>sonar-maven-plugin</artifactId>
 			<version>5.1.0.4751</version>
 		</dependency>
+		<!-- Mockito com integração total com JUnit 5 -->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Biblioteca AssertJ para asserções mais legíveis -->
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
