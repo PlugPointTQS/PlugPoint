@@ -1,0 +1,96 @@
+.reservations-page {
+  padding: 2rem;
+  background: linear-gradient(135deg, #0d1e1a, #1e3a30, #2e8b57);
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  color: #e0f7ea;
+}
+
+.reservations-title {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 2.5rem;
+  text-align: center;
+  text-shadow: 0 0 10px #2e8b57;
+  letter-spacing: 1px;
+}
+
+.empty-message {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #b0bec5;
+}
+
+.reservation-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Limita a 4 por linha */
+  gap: 2rem;
+  padding: 0 1rem;
+}
+
+@media (max-width: 1400px) {
+  .reservation-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .reservation-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .reservation-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reservation-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(46, 139, 87, 0.35);
+  backdrop-filter: blur(12px);
+  padding: 2.5rem 2rem;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(46, 139, 87, 0.15);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  text-align: left;
+  color: #f0f0f0;
+}
+
+.reservation-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 26px rgba(46, 139, 87, 0.4);
+}
+
+.reservation-card h3 {
+  margin-bottom: 1rem;
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.reservation-card p {
+  margin: 0.8rem 0;
+  font-size: 1.05rem;
+  color: #e0f7ea;
+  line-height: 1.6;
+}
+
+.cancel-button {
+  margin-top: 1.8rem;
+  padding: 0.75rem 1.5rem;
+  background: #e53935;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+.cancel-button:hover {
+  background: #c62828;
+}

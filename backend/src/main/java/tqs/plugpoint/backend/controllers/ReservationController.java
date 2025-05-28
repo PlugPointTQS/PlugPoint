@@ -31,7 +31,7 @@ public class ReservationController {
     public ResponseEntity<List<Reservation>> getByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(reservationService.getReservationsByUserId(userId));
     }
-
+    
     @GetMapping("/charger/{chargerId}")
     public ResponseEntity<List<Reservation>> getByCharger(@PathVariable Long chargerId) {
         return ResponseEntity.ok(reservationService.getReservationsByChargerId(chargerId));
