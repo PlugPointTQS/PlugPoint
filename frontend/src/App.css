@@ -1,120 +1,101 @@
-/* Estilos Gerais */
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+}
+
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+html,
 body {
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #e8eaf6;
+  padding: 0;
+  overflow: hidden;
+  /* impede scroll */
+  height: 100%;
 }
 
 .app-container {
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  background-color: #f0f8ff;
 }
 
-/* Navbar */
+.homepage-container {
+  flex: 1;
+  display: flex;
+  max-height: calc(100vh - 70px);
+  /* altura ajustada considerando navbar */
+  margin: 0 auto;
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background-color: #1a237e;
-  /* Azul escuro */
+  height: 50px;
+  background-color: #2e8b57;
   color: white;
+  padding: 0 1rem;
 }
 
-.logo {
-  height: 80px;
-}
-.logo-container {
-  display: flex;
-  align-items: center;
-  
-} 
-
-
-
-.toggle-btn.active {
-  background-color: white;
-  color: #1a237e;
-  border-radius: 20px;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.nav-links a {
+.navbar a {
   color: white;
+  margin-left: 1rem;
   text-decoration: none;
 }
 
-.login-btn {
-  padding: 0.5rem 1.5rem;
-  background-color: white;
-  color: #1a237e;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-/* Search Section */
-.search-section {
-  padding: 2rem;
-  background-color: #e8eaf6;
-  /* Azul muito claro */
-}
-
-.search-section h1 {
-  color: #1a237e;
-  margin-bottom: 1.5rem;
-  font-size: 1.8rem;
-}
-
-.search-form {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.search-form input {
-  flex: 1;
-  min-width: 200px;
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
-.search-btn {
-  padding: 0.8rem 2rem;
-  background-color: #1a237e;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.search-btn:hover {
-  background-color: #303f9f;
-}
-
-/* Map Section */
-.map-container {
-  flex: 1;
-  position: relative;
-}
-
-.map {
-  width: 100%;
-  height: 100%;
-  height: 650px;
+.navbar a:hover {
+  text-decoration: underline;
 }
 
 
-
-
+.navbar-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
