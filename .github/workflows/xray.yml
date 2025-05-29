@@ -40,4 +40,4 @@ jobs:
           curl -X POST https://xray.cloud.getxray.app/api/v2/import/execution/junit \
             -H "Content-Type: multipart/form-data" \
             -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
-            -F "file=@backend/target/surefire-reports/TEST-*.xml"
+            -F "file=@target/surefire-reports/TEST-*.xml"
