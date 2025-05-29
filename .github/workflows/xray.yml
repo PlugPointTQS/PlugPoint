@@ -12,20 +12,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          java-version: 21
-          distribution: 'zulu'
+          distribution: 'temurin'
+          java-version: 17
 
-      - name: Build and test
-        working-directory: backend
-        run: mvn clean test
+      - name: Run tests
+        working-directory: ./backend
+        run: mvn test
 
-      - name: Authenticate to Xray
-        id: xray_auth
+      - name: Get Xray token
+        id: get_token
         run: |
           response=$(curl -s -X POST https://xray.cloud.getxray.app/api/v2/authenticate \
             -H "Content-Type: application/json" \
@@ -33,9 +34,9 @@ jobs:
           token=$(echo $response | tr -d '"')
           echo "token=$token" >> $GITHUB_OUTPUT
 
-      - name: Upload test results to Xray
+      - name: Upload results to Xray
         run: |
           curl -X POST https://xray.cloud.getxray.app/api/v2/import/execution/junit \
             -H "Content-Type: multipart/form-data" \
-            -H "Authorization: Bearer ${{ steps.xray_auth.outputs.token }}" \
-            -F "file=@backend/target/surefire-reports/TEST-*.xml"
+            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+            -F "file=@target/surefire-reports/TEST-*.xml"
