@@ -26,9 +26,8 @@ jobs:
         distribution: 'zulu' # Alternative distribution options are available.
 
     - name: Build and run tests
-      woring-directory: backend
-      run: |
-        ./mvnw clean test
+      working-directory: backend
+      run: ./mvnw clean test
 
     - name: Upload JUnit results to Xray
       run: |
