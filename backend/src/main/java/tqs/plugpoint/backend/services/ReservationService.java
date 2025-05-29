@@ -33,7 +33,7 @@ public class ReservationService {
 
     public Reservation createReservation(Reservation reservation) {
         reservation.setCreatedAt(LocalDateTime.now());
-        reservation.setStatus(Reservation.Status.PENDING);
+        reservation.setStatus(Reservation.Status.CONFIRMED);
         return reservationRepository.save(reservation);
     }
 

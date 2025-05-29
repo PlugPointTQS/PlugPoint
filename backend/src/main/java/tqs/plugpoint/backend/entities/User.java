@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "users")
+
 @Builder
 public class User {
     @Id

@@ -1,0 +1,313 @@
+/* ---------- Global ----------- */
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    width:100%;
+    overflow:hidden;
+    font-family:"Inter",Arial,Helvetica,sans-serif;
+    background:#e9f3f8;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  
+  /* ---------- HomePage container ajustado ---------- */
+  .homepage-container{
+    width:calc(100vw - 2rem);
+    height:calc(100vh - 60px);
+    margin:1rem auto;
+    display:flex;
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+    overflow:hidden;
+  }
+  
+  .map-column{
+    flex:3;
+    display:flex;
+    border-top-left-radius:12px;
+    border-bottom-left-radius:12px;
+    overflow:hidden;
+  }
+  .map-view{
+    flex:1;
+    height:100%;
+    will-change: transform;
+    transition: transform 0.3s ease-out;
+  }
+  .list-column{
+    flex:1.2;
+    background:#e7f9f1;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    border-top-right-radius:12px;
+    border-bottom-right-radius:12px;
+  }
+  .list-column h2{
+    margin:0;
+    padding:1rem 1.2rem;
+    background:#2e8b57;
+    color:#fff;
+    font-size:1rem;
+    border-top-right-radius:12px;
+  }
+  .station-list{
+    flex:1;
+    padding:1rem 1.2rem;
+    overflow-y:auto;
+    list-style:none;
+    margin:0;
+    scroll-behavior:smooth;
+  }
+  .station-item{
+    background:#ffffff;
+    border:1px solid #c5e6d7;
+    border-radius:8px;
+    padding:0.8rem;
+    margin-bottom:1rem;
+    box-shadow:0 2px 5px rgba(0,0,0,.05);
+  }
+  .station-item h3{
+    margin:0 0 0.25rem 0;
+    font-size:0.95rem;
+    color:#2e6644;
+  }
+  .station-item p{
+    margin:0;
+    font-size:0.85rem;
+    color:#4a4a4a;
+  }
+  .station-item button{
+    margin-top:0.5rem;
+    padding:0.45rem 0.9rem;
+    background:#2e8b57;
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:0.8rem;
+    transition:background 0.2s ease;
+  }
+  .station-item button:hover{
+    background:#276f49;
+  }
+  
+  .station-details {
+    padding: 1rem;
+    border-radius: 10px;
+    margin: 15px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    color: #333;
+    max-height: 85vh;
+    overflow-y: auto;
+    border-style:groove;
+    border-color:#276f49
+  }
+  
+  .station-details-wrapper {
+    flex: 1;
+    padding: 1rem;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  
+  .station-details-inner {
+    opacity: 0;
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #276f49;
+  }
+  
+  
+  
+  .address-directions-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 1rem;
+  }
+  
+  .station-address {
+    flex: 1;
+  }
+  
+  .station-directions {
+    white-space: nowrap;
+  }
+  
+  
+  .station-details h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0.2rem;
+    color: #ffffff;
+  }
+  
+  .station-operator {
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    margin-left: 0.5rem;
+  }
+  
+  .station-address {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    margin-left: 0.5rem;
+  }
+  
+  .station-connections {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  
+  .directions-button {
+    display: inline-block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    padding: 8px 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #64b989;
+  }
+  
+  .directions-button:hover {
+    background-color: #4d704d;
+  }
+  
+  .directions-button, .station-item button, .reserve-button {
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .directions-button:hover, .station-item button:hover, .reserve-button:hover {
+    transform: translateY(-1px);
+  }
+  
+  
+  .connection-card {
+    padding: 0.5rem;
+    border-left: 5px solid #2c7a7b;
+    background: #f7fdfd;
+    border-radius: 5px;
+  }
+  
+  .connection-card h4 {
+    margin: 0;
+    color: #2c5282;
+  }
+  
+  .connection-card p {
+    margin: 0.2rem 0;
+    font-size: 0.9rem;
+  }
+  
+  .status.available {
+    color: #38a169;
+  }
+  
+  .status.unavailable {
+    color: #e53e3e;
+  }
+  
+  .station-footer {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #444;
+  }
+  
+  .station-actions {
+    display: flex;
+    align-items: center;     /* Alinha verticalmente */
+    gap: 12px;
+    margin-top: 0.5rem;
+  }
+  
+  .reserve-button {
+    padding: 0.45rem 0.9rem;
+    background: #2e8b57;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s ease;
+  }
+  
+  .favorite-button {
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    padding: 0; /* remove espaçamento interno */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .favorite-button:hover {
+    transform: scale(1.1);
+  }
+  
+  .favorite-button svg {
+    display: block;
+  }
+  
+  
+  
+  
+  
+  @media(max-width:900px){
+    .homepage-container{
+      flex-direction:column;
+      height:auto;
+      width:calc(100vw - 1rem);
+    }
+    .map-column{
+      height:50vh;
+      border-radius:12px 12px 0 0;
+    }
+    .list-column{
+      height:50vh;
+      border-radius:0 0 12px 12px;
+    }
+  }
+    .connection-card {
+      padding: 0.8rem;
+      border-left: 5px solid #2c7a7b;
+      background: #f7fdfd;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+  
+    .charger-info {
+      flex: 1;
+    }
+  
+    .charger-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+  
+    /* Mantenha o resto do CSS existente */
