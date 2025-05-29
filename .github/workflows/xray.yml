@@ -1,32 +1,31 @@
-name: Upload Test Results to Xray
+name: Xray Upload
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
-  workflow_dispatch:
+    branches:
+      - dev
+      - main
+      - tests/setup
 
 jobs:
-  upload-to-xray:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: 17
+          java-version: 21
+          distribution: 'zulu'
 
-      - name: Run tests
-        working-directory: ./backend
-        run: mvn test
+      - name: Build and test
+        working-directory: backend
+        run: mvn clean test
 
-      - name: Get Xray token
-        id: get_token
+      - name: Authenticate to Xray
+        id: xray_auth
         run: |
           response=$(curl -s -X POST https://xray.cloud.getxray.app/api/v2/authenticate \
             -H "Content-Type: application/json" \
@@ -34,9 +33,9 @@ jobs:
           token=$(echo $response | tr -d '"')
           echo "token=$token" >> $GITHUB_OUTPUT
 
-      - name: Upload results to Xray
+      - name: Upload test results to Xray
         run: |
           curl -X POST https://xray.cloud.getxray.app/api/v2/import/execution/junit \
             -H "Content-Type: multipart/form-data" \
-            -H "Authorization: Bearer ${{ steps.get_token.outputs.token }}" \
+            -H "Authorization: Bearer ${{ steps.xray_auth.outputs.token }}" \
             -F "file=@backend/target/surefire-reports/TEST-*.xml"
