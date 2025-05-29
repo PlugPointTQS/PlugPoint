@@ -89,7 +89,7 @@ class ReservationServiceTest {
 
         Reservation saved = reservationService.createReservation(newReservation);
 
-        assertThat(saved.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(saved.getStatus()).isEqualTo(Status.CONFIRMED);
         assertThat(saved.getCreatedAt()).isNotNull();
         verify(reservationRepository).save(saved);
     }
