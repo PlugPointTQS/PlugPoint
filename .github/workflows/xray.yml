@@ -32,16 +32,19 @@ jobs:
       run: ls -R backend/target/surefire-reports
 
     - name: Upload JUnit results to Xray
-      run: |
+       run: |
         TOKEN_RESPONSE=$(curl -s -X POST https://xray.cloud.getxray.app/api/v2/authenticate \
           -H "Content-Type: application/json" \
           -d "{\"client_id\": \"${{ secrets.XRAY_ID }}\", \"client_secret\": \"${{ secrets.XRAY_SECRET }}\"}")
         TOKEN=$(echo $TOKEN_RESPONSE | tr -d '"')
 
-        curl -X POST https://xray.cloud.getxray.app/api/v2/import/execution/junit \
-          -H "Content-Type: multipart/form-data" \
-          -H "Authorization: Bearer $TOKEN" \
-          -F "file=@backend/target/surefire-reports/TEST-*.xml"
+        for file in backend/target/surefire-reports/TEST-*.xml; do
+          echo "Uploading $file"
+          curl -X POST https://xray.cloud.getxray.app/api/v2/import/execution/junit \
+            -H "Content-Type: multipart/form-data" \
+            -H "Authorization: Bearer $TOKEN" \
+            -F "file=@$file"
+        done
 
       env:
         XRAY_ID: ${{ secrets.XRAY_ID }}
