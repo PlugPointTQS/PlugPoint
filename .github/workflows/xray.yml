@@ -6,6 +6,7 @@ on:
       - dev
       - main
       - tests/setup
+  wokflow_dispatch:
 
 jobs:
   build:
