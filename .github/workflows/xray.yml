@@ -1,33 +1,45 @@
-name: Xray
+name: Upload Test Results to Xray
 
 on:
   push:
     branches:
-      - dev
       - main
-      - tests/setup
-  wokflow_dispatch:
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
 
 jobs:
-  build:
+  upload-to-xray:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: 21
-          distribution: 'zulu'  # or 'temurin' if you prefer
-      - name: Build and test
-        working-directory: ./backend  
-        run: mvn clean install
+    - name: Check out code
+      uses: actions/checkout@v2
 
-      - name: Import results to Xray
-        working-directory: ./backend
-        uses: mikepenz/xray-action@v3
-        with:
-          username: ${{ secrets.xray_client_id }}
-          password: ${{ secrets.xray_client_secret }}
-          testformat: "junit"
-          testpaths: "target/surefire-reports/TEST-*.xml"
-          projectkey: "PP"
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+
+    - name: Build and run tests
+      run: |
+        ./mvnw clean test
+
+    - name: Upload JUnit results to Xray
+      run: |
+        TOKEN_RESPONSE=$(curl -s -X POST https://xray.cloud.getxray.app/api/v2/authenticate \
+          -H "Content-Type: application/json" \
+          -d "{\"client_id\": \"${{ secrets.XRAY_ID }}\", \"client_secret\": \"${{ secrets.XRAY_SECRET }}\"}")
+        TOKEN=$(echo $TOKEN_RESPONSE | tr -d '"')
+
+        curl -X POST https://xray.cloud.getxray.app/api/v2/import/execution/junit \
+          -H "Content-Type: multipart/form-data" \
+          -H "Authorization: Bearer $TOKEN" \
+          -F "file=@backend/target/surefire-reports/TEST-*.xml"
+
+      env:
+        XRAY_ID: ${{ secrets.XRAY_ID }}
+        XRAY_SECRET: ${{ secrets.XRAY_SECRET }}
