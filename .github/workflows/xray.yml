@@ -1,14 +1,14 @@
-name: Xray Upload
+name: Upload Test Results to Xray
 
 on:
   push:
-    branches:
-      - dev
-      - main
-      - tests/setup
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
 
 jobs:
-  build:
+  upload-to-xray:
     runs-on: ubuntu-latest
 
     steps:
