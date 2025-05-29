@@ -28,6 +28,8 @@ jobs:
     - name: Build and run tests
       working-directory: backend
       run: ./mvnw clean test
+    - name: Debug XMLs
+      run: ls -R backend/target/surefire-reports
 
     - name: Upload JUnit results to Xray
       run: |
