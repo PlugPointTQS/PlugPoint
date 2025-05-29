@@ -26,6 +26,7 @@ jobs:
         distribution: 'zulu' # Alternative distribution options are available.
 
     - name: Build and run tests
+      woring-directory: backend
       run: |
         ./mvnw clean test
 
