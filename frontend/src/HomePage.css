@@ -289,3 +289,25 @@ html,body{
       border-radius:0 0 12px 12px;
     }
   }
+    .connection-card {
+      padding: 0.8rem;
+      border-left: 5px solid #2c7a7b;
+      background: #f7fdfd;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+  
+    .charger-info {
+      flex: 1;
+    }
+  
+    .charger-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+  
+
