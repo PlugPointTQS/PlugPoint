@@ -16,9 +16,9 @@ const getLocIcon = new L.Icon({
 });
 
 const CITIES = [
-  'Aveiro','Beja','Braga','Bragança','Castelo Branco','Coimbra','Évora','Faro',
-  'Guarda','Leiria','Lisboa','Portalegre','Porto','Santarém','Setúbal',
-  'Viana do Castelo','Vila Real','Viseu'
+  'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco', 'Coimbra', 'Evora', 'Faro',
+  'Guarda', 'Leiria', 'Lisboa', 'Portalegre', 'Porto', 'Santarem', 'Setubal',
+  'Viana do Castelo', 'Vila Real', 'Viseu'
 ];
 
 const dist = (la1, lo1, la2, lo2) => {
@@ -39,7 +39,8 @@ export default function HomePage() {
   const [recent, setRecent] = useState([]);
   const [showDD, setShowDD] = useState(false);
   const [typeFilter, setTypeFilter] = useState('');
-  const [availFilter, setAvailFilter] = useState(false);
+  const [powerValue, setPowerValue] = useState(250);
+  const [distanceValue, setDistanceValue] = useState(250);
 
   const mapRef = useRef(null);
 
@@ -107,15 +108,13 @@ export default function HomePage() {
     setRecent(p => [city, ...p.filter(x => x !== city)].slice(0, 5));
   };
 
-  const clearFilters = () => {
-    setTypeFilter('');
-    setAvailFilter(false);
-  };
-
   const applyFilters = s => {
     const chargers = stationChargers[s.id] || [];
+
     if (typeFilter && !chargers.some(c => c.type === typeFilter)) return false;
-    if (availFilter && !chargers.some(c => c.status === 'AVAILABLE')) return false;
+    if (!chargers.some(c => c.power <= powerValue)) return false;
+    if (s.distance && s.distance > distanceValue) return false;
+
     return true;
   };
 
@@ -135,7 +134,7 @@ export default function HomePage() {
       <div className="map">
         <MapContainer center={[39.5, -8]} zoom={7} ref={mapRef} className="leaflet">
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {stations.map(s => (
+          {displayed.map(s => (
             <Marker key={s.id} position={[s.latitude, s.longitude]} icon={chargerIcon}
               eventHandlers={{ click: () => openDetails(s) }} />
           ))}
@@ -188,34 +187,51 @@ export default function HomePage() {
           )}
 
           <div className="filters-modern">
-            <input type="text" className="filter-search" placeholder="Pesquisar..." />
-
-            <select className="filter-select">
-              <option>Concelho</option>
+            <label className="filter-label">Tipo de Carregador</label>
+            <select
+              className="filter-select"
+              value={typeFilter}
+              onChange={e => setTypeFilter(e.target.value)}
+            >
+              <option value="">Todos</option>
+              <option value="TYPE2">TYPE2</option>
+              <option value="CHADEMO">CHADEMO</option>
+              <option value="CCS">CCS</option>
+              <option value="TESLA">TESLA</option>
+              <option value="AC">AC</option>
+              <option value="DC">DC</option>
             </select>
 
-            <select className="filter-select">
-              <option>Tomada</option>
-            </select>
+            <label className="filter-label">
+              Potência: <strong>{powerValue} kW</strong>
+            </label>
+            <input
+              type="range"
+              className="filter-slider"
+              min="0"
+              max="250"
+              value={powerValue}
+              onChange={e => setPowerValue(+e.target.value)}
+            />
 
-            <select className="filter-select">
-              <option>Operador</option>
-            </select>
+            <label className="filter-label">
+              Distância: <strong>{distanceValue} km</strong>
+            </label>
+            <input
+              type="range"
+              className="filter-slider"
+              min="0"
+              max="250"
+              value={distanceValue}
+              onChange={e => setDistanceValue(+e.target.value)}
+            />
 
-            <div className="filter-power-types">
-              <label><input type="checkbox" /> ⚡ Potência Normal Lento</label>
-              <label><input type="checkbox" /> ⚡ Potência Normal Médio</label>
-              <label><input type="checkbox" /> ⚡ Alta Potência Rápido</label>
-              <label><input type="checkbox" /> ⚡ Alta Potência Ultrarrápido</label>
-            </div>
-
-            <label className="filter-label">Potência</label>
-            <input type="range" className="filter-slider" min="0" max="250" />
-
-            <label className="filter-label disabled">Distância</label>
-            <input type="range" className="filter-slider disabled" disabled />
+            <button className="clear" onClick={() => {
+              setTypeFilter('');
+              setPowerValue(250);
+              setDistanceValue(250);
+            }}>Limpar filtros</button>
           </div>
-
         </div>
 
         {selected ? (
@@ -223,7 +239,7 @@ export default function HomePage() {
             <div className="station-header">
               <div>
                 <h3 className="station-name">{selected.name}</h3>
-                <p className="station-address">{selected.address}</p>
+                <h3 className="station-address">{selected.address}</h3>
               </div>
               <img src="public/getLoc.png" alt="Map" className="station-map-icon" />
             </div>
@@ -258,14 +274,18 @@ export default function HomePage() {
           </div>
         ) : (
           <ul className="list">
-            {displayed.map(s => (
-              <li key={s.id} onClick={() => openDetails(s)}>
-                <h4>{s.name}</h4>
-                <p>{s.address}</p>
-                {s.distance && <span>{s.distance.toFixed(1)} km</span>}
-                <button>Detalhes</button>
-              </li>
-            ))}
+            {displayed.length === 0 ? (
+              <p style={{ padding: '1rem' }}>⚠️ Nenhuma estação corresponde aos filtros.</p>
+            ) : (
+              displayed.map(s => (
+                <li key={s.id} onClick={() => openDetails(s)}>
+                  <h4>{s.name}</h4>
+                  <p>{s.address}</p>
+                  {s.distance && <span>{s.distance.toFixed(1)} km</span>}
+                  <button>Detalhes</button>
+                </li>
+              ))
+            )}
           </ul>
         )}
       </aside>
