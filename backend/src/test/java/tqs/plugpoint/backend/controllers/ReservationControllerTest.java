@@ -1,6 +1,8 @@
 package tqs.plugpoint.backend.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,13 +47,14 @@ class ReservationControllerTest {
     }
 
     @Test
+    @DisplayName("PP-41: Reservation is created")
     void testCreateReservation() throws Exception {
         Reservation reservation = sampleReservation();
         Mockito.when(reservationService.createReservation(any())).thenReturn(reservation);
 
         mockMvc.perform(post("/api/reservations")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(reservation)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(reservation)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(reservation.getId()))
                 .andExpect(jsonPath("$.userId").value(reservation.getUserId()));
@@ -94,7 +97,7 @@ class ReservationControllerTest {
                 .thenReturn(reservation);
 
         mockMvc.perform(patch("/api/reservations/1/status")
-                        .param("status", "CONFIRMED"))
+                .param("status", "CONFIRMED"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CONFIRMED"));
     }
