@@ -45,14 +45,15 @@ function MyReservations() {
 
   const handleCancel = async (reservationId) => {
     try {
-      await fetch(`http://localhost:8080/api/reservations/${reservationId}`, {
-        method: 'DELETE',
+      await fetch(`http://localhost:8080/api/reservations/${reservationId}/cancel?userId=${userId}`, {
+        method: 'POST',
       });
-      setReservations(prev => prev.filter(r => r.id !== reservationId));
+      setReservations(prev => prev.map(r => r.id === reservationId ? {...r, status: 'CANCELLED'} : r));
     } catch (err) {
       console.error('Error cancelling reservation:', err);
     }
   };
+
 
   const getStatusBadge = (status) => {
     const statusClasses = {
