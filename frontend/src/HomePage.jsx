@@ -10,9 +10,9 @@ const chargerIcon = new L.Icon({
   iconAnchor: [20, 40],
 });
 const getLocIcon = new L.Icon({
-  iconUrl: '/getLoc.png',
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
+  iconUrl: '/checkpoint.png',
+  iconSize: [120, 120],
+  iconAnchor: [50, 100],
 });
 
 const CITIES = [
