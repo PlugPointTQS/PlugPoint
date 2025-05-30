@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import tqs.plugpoint.backend.dto.StationAvailabilityDTO;
 import tqs.plugpoint.backend.entities.ChargingStation;
 import tqs.plugpoint.backend.services.ChargingStationService;
+
 
 @RestController
 @RequestMapping("/api/stations")
@@ -59,6 +61,11 @@ public class ChargingStationController {
         @RequestParam double lng,
         @RequestParam(defaultValue = "5.0") double radiusKm) {
         return ResponseEntity.ok(service.getStationsNearby(lat, lng, radiusKm));
-}
+    }
+    @GetMapping("/availability")
+    public ResponseEntity<List<StationAvailabilityDTO>> getStationAvailability() {
+        return ResponseEntity.ok(service.getStationAvailability());
+    }
+
 
 }
