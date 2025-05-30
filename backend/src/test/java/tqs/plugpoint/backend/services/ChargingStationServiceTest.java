@@ -1,22 +1,30 @@
 package tqs.plugpoint.backend.services;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import tqs.plugpoint.backend.entities.ChargingStation;
-import tqs.plugpoint.backend.entities.ChargingStation.Status;
-import tqs.plugpoint.backend.repositories.ChargingStationRepository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
+
+import tqs.plugpoint.backend.dto.StationAvailabilityDTO;
+import tqs.plugpoint.backend.entities.Charger;
+import tqs.plugpoint.backend.entities.ChargingStation;
+import tqs.plugpoint.backend.entities.ChargingStation.Status;
+import tqs.plugpoint.backend.repositories.ChargerRepository;
+import tqs.plugpoint.backend.repositories.ChargingStationRepository;
 
 class ChargingStationServiceTest {
 
     @Mock
     private ChargingStationRepository repository;
+
+    @Mock  
+    private ChargerRepository chargerRepository;
 
     @InjectMocks
     private ChargingStationService service;
@@ -75,5 +83,23 @@ class ChargingStationServiceTest {
         List<ChargingStation> nearby = service.getStationsNearby(userLat, userLng, radiusKm);
 
         assertThat(nearby).isEmpty();
+    }
+
+    @Test
+    void testGetStationAvailability() {
+        // Simular a resposta do repository para todas as estações
+        when(repository.findAll()).thenReturn(List.of(aveiroStation));
+
+        // Simular a contagem de carregadores disponíveis
+        when(chargerRepository.countByStationIdAndStatus(1L, Charger.ChargerStatus.AVAILABLE))
+                .thenReturn(2L);
+
+        // Chamar o método a testar
+        List<StationAvailabilityDTO> result = service.getStationAvailability();
+
+        // Verificar os resultados
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getStationId()).isEqualTo(1L);
+        assertThat(result.get(0).getAvailableChargers()).isEqualTo(2L);
     }
 }
