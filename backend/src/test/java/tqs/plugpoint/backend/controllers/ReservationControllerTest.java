@@ -1,7 +1,6 @@
 package tqs.plugpoint.backend.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -18,7 +17,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -93,13 +93,30 @@ class ReservationControllerTest {
         Reservation reservation = sampleReservation();
         reservation.setStatus(Status.CONFIRMED);
 
-        Mockito.when(reservationService.updateReservationStatus(1L, Status.CONFIRMED))
+        // Ajustar a chamada para incluir userId (igual ao mockReservation)
+        Mockito.when(reservationService.updateReservationStatus(eq(1L), eq(Status.CONFIRMED), eq(5L)))
                 .thenReturn(reservation);
 
         mockMvc.perform(patch("/api/reservations/1/status")
-                .param("status", "CONFIRMED"))
+                .param("status", "CONFIRMED")
+                .param("userId", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CONFIRMED"));
+    }
+
+    @Test
+    void testCancelReservation() throws Exception {
+        Reservation reservation = sampleReservation();
+        reservation.setStatus(Status.CANCELLED);
+
+        // Mock do cancelamento
+        Mockito.when(reservationService.updateReservationStatus(eq(1L), eq(Status.CANCELLED), eq(5L)))
+                .thenReturn(reservation);
+
+        mockMvc.perform(post("/api/reservations/1/cancel")
+                .param("userId", "5"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("CANCELLED"));
     }
 
     @Test

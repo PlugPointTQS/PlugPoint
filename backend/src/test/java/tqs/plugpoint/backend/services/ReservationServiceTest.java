@@ -1,18 +1,26 @@
 package tqs.plugpoint.backend.services;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import tqs.plugpoint.backend.entities.Reservation;
-import tqs.plugpoint.backend.entities.Reservation.Status;
-import tqs.plugpoint.backend.repositories.ReservationRepository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
+
+import tqs.plugpoint.backend.entities.Reservation;
+import tqs.plugpoint.backend.entities.Reservation.Status;
+import tqs.plugpoint.backend.repositories.ReservationRepository;
 
 class ReservationServiceTest {
 
@@ -99,22 +107,39 @@ class ReservationServiceTest {
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(mockReservation));
         when(reservationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        Reservation updated = reservationService.updateReservationStatus(1L, Status.CONFIRMED);
+        Reservation updated = reservationService.updateReservationStatus(1L, Status.CONFIRMED, mockReservation.getUserId());
 
         assertThat(updated.getStatus()).isEqualTo(Status.CONFIRMED);
         verify(reservationRepository).save(mockReservation);
     }
-
+    
+    
     @Test
     void testUpdateReservationStatusThrowsIfNotFound() {
         when(reservationRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
-                reservationService.updateReservationStatus(999L, Status.CANCELLED))
+                reservationService.updateReservationStatus(999L, Status.CANCELLED, mockReservation.getUserId()))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Reservation not found");
 
         verify(reservationRepository, never()).save(any());
+    }
+
+    @Test
+    void testCancelReservationSuccessfully() {
+        // Simula a reserva existente
+        when(reservationRepository.findById(1L)).thenReturn(Optional.of(mockReservation));
+        when(reservationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        // Chama o método de atualização de status com CANCELLED
+        Reservation cancelled = reservationService.updateReservationStatus(1L, Status.CANCELLED, mockReservation.getUserId());
+
+        // Verifica se o status foi alterado para CANCELLED
+        assertThat(cancelled.getStatus()).isEqualTo(Status.CANCELLED);
+
+        // Verifica se o save foi chamado com a reserva atualizada
+        verify(reservationRepository).save(mockReservation);
     }
 
     @Test
