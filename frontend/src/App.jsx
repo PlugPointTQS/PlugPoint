@@ -2,6 +2,9 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import HomePage from './HomePage';
 import MyReservations from './MyReservations';
+import AdminPage from './AdminPage';
+
+
 
 function App() {
   return (
@@ -11,6 +14,7 @@ function App() {
           <div className="navbar-title">🔌 PlugPoint</div>
           <div className="navbar-links">
             <Link to="/">Home</Link>
+            <Link to="/adminPage">Management</Link>
             <Link to="/reservations">My Reservations</Link>
           </div>
         </nav>
@@ -18,6 +22,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/home" element={<HomePage />} />
+          <Route path="/adminPage" element={<AdminPage />} />
           <Route path="/reservations" element={<MyReservations />} />
         </Routes>
       </div>

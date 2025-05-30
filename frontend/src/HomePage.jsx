@@ -134,7 +134,7 @@ export default function HomePage() {
                   <div className="address-directions-container">
                     <div className="station-address">
                       <h3>{selectedStation.name}</h3>
-                      <p>{selectedStation.address}</p>
+                      <h3>{selectedStation.address}</h3>
                     </div>
                     <div className="station-directions">
                       <a
@@ -158,8 +158,7 @@ export default function HomePage() {
                             <h4>Charger {index + 1}</h4>
                             <p><strong>Type:</strong> {charger.type}</p>
                             <p><strong>Power:</strong> {charger.power} kW</p>
-                            <p className={`status ${charger.status === 'AVAILABLE' ? 'available' : 'unavailable'}`}>
-                              {charger.status}
+                            <p className={`status ${charger.status === 'AVAILABLE' ? 'available' : charger.status === 'MAINTENANCE' ? 'manutenance' : 'unavailable'}`}>
                             </p>
                           </div>
                           <div className="charger-actions">
@@ -180,7 +179,7 @@ export default function HomePage() {
 
                   <div className="station-footer">
                     <p>🔌 {chargers.length} chargers available</p>
-                    <div className="station-actions">
+                  <div className="station-actions">
 
                       <button
                         className="favorite-button"

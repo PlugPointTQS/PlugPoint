@@ -140,6 +140,19 @@ html,body{
   .station-address {
     flex: 1;
   }
+
+  .station-address h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #2c5282;
+  }
+
+  station-address p {
+    margin: 0;
+    font-size: 1rem;
+    color: #2c5282;
+  }
+
   
   .station-directions {
     white-space: nowrap;
@@ -224,6 +237,10 @@ html,body{
   
   .status.unavailable {
     color: #e53e3e;
+  }
+
+  .status.manutenance {
+    color: #d69e2e;
   }
   
   .station-footer {
