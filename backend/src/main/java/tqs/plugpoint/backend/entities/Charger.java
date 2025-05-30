@@ -17,24 +17,28 @@ public class Charger {
     private Long id;
 
     private Long stationId; 
+    private double power;
 
-    @Enumerated(EnumType.STRING)
-    private ChargingMode mode; // SLOW, MEDIUM, FAST, ULTRA_FAST
 
+    
     @Enumerated(EnumType.STRING)
     private ChargerStatus status; // AVAILABLE, IN_USE, MAINTENANCE
-    
-    public enum ChargingMode {
-        SLOW, // < 7.4 kW
-        MEDIUM, // 7.4 - 22 kW
-        FAST, // > 22 - 150 kW
-        ULTRA_FAST // ≥ 150 kW
-    }
+    @Enumerated(EnumType.STRING)
+    private ChargerType type; // TYPE2, CHADEMO, CCS, etc.
     
     public enum ChargerStatus {
         AVAILABLE,
         IN_USE,
         MAINTENANCE
+    }
+    
+    public enum ChargerType {
+        TYPE2,
+        CHADEMO,
+        CCS,
+        TESLA,
+        AC,
+        DC
     }
 
 }
