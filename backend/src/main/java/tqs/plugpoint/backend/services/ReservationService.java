@@ -1,13 +1,14 @@
 package tqs.plugpoint.backend.services;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import tqs.plugpoint.backend.entities.Reservation;
-import tqs.plugpoint.backend.repositories.ReservationRepository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
+import tqs.plugpoint.backend.entities.Reservation;
+import tqs.plugpoint.backend.repositories.ReservationRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -41,12 +42,20 @@ public class ReservationService {
         reservationRepository.deleteById(id);
     }
 
-    public Reservation updateReservationStatus(Long id, Reservation.Status status) {
+    public Reservation updateReservationStatus(Long id, Reservation.Status status, Long userId) {
         Optional<Reservation> optional = reservationRepository.findById(id);
-        if (optional.isEmpty())
+        if (optional.isEmpty()) {
             throw new RuntimeException("Reservation not found");
-        Reservation r = optional.get();
-        r.setStatus(status);
-        return reservationRepository.save(r);
+        }
+        Reservation reservation = optional.get();
+
+        // Verifica se a reserva pertence ao userId informado
+        if (!reservation.getUserId().equals(userId)) {
+            throw new RuntimeException("Unauthorized: this reservation does not belong to the user");
+        }
+
+        reservation.setStatus(status);
+        return reservationRepository.save(reservation);
     }
+
 }

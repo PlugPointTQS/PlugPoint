@@ -1,6 +1,7 @@
 package tqs.plugpoint.backend.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,17 +9,21 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
 import tqs.plugpoint.backend.entities.ChargingStation;
 import tqs.plugpoint.backend.entities.ChargingStation.Status;
 import tqs.plugpoint.backend.services.ChargingStationService;
-
+import tqs.plugpoint.backend.dto.StationAvailabilityDTO;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+
 
 @WebMvcTest(ChargingStationController.class)
 class ChargingStationControllerTest {
@@ -140,4 +145,15 @@ class ChargingStationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }
+    @Test
+    void testGetStationAvailability() throws Exception {
+        StationAvailabilityDTO dto = new StationAvailabilityDTO(1L, "Aveiro EV", 2);
+        when(service.getStationAvailability()).thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/api/stations/availability"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].stationId").value(1))
+                .andExpect(jsonPath("$[0].availableChargers").value(2));
+        }
+
 }

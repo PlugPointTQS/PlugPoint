@@ -1,12 +1,21 @@
 package tqs.plugpoint.backend.controllers;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
 import tqs.plugpoint.backend.entities.Reservation;
 import tqs.plugpoint.backend.services.ReservationService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -45,13 +54,21 @@ public class ReservationController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<Reservation> updateStatus(
             @PathVariable Long id,
-            @RequestParam Reservation.Status status) {
-        return ResponseEntity.ok(reservationService.updateReservationStatus(id, status));
+            @RequestParam Reservation.Status status,
+            @RequestParam Long userId) {
+        return ResponseEntity.ok(reservationService.updateReservationStatus(id, status, userId));
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         reservationService.deleteReservation(id);
         return ResponseEntity.noContent().build();
     }
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<Reservation> cancelReservation(@PathVariable Long id, @RequestParam Long userId) {
+        Reservation cancelled = reservationService.updateReservationStatus(id, Reservation.Status.CANCELLED, userId);
+        return ResponseEntity.ok(cancelled);
+}
+
 }

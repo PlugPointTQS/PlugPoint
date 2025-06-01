@@ -78,6 +78,7 @@ const AdminPage = () => {
     const { name, address } = selectedStation;
 
     const handleEditToggle = () => {
+
       if (isEditing) {
         chargers.forEach((charger) => {
           fetch(`http://localhost:8080/api/chargers/${charger.id}`, {
