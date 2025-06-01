@@ -25,6 +25,8 @@ public class Charger {
     private ChargerStatus status; // AVAILABLE, IN_USE, MAINTENANCE
     @Enumerated(EnumType.STRING)
     private ChargerType type; // TYPE2, CHADEMO, CCS, etc.
+
+
     
     public enum ChargerStatus {
         AVAILABLE,
@@ -40,5 +42,30 @@ public class Charger {
         AC,
         DC
     }
+
+    public void setType(ChargerType type) {
+        this.type = type;
+    }
+
+    public void setPower(double power) {
+        this.power = power;
+    }
+
+    public void setStatus(ChargerStatus status) {
+        this.status = status;
+    }
+
+    public ChargerType getType() {
+        return type;
+    }
+
+    public double getPower() {
+        return power;
+    }
+
+    public ChargerStatus getStatus() {
+        return status;
+    }
+
 
 }

@@ -78,6 +78,21 @@ const AdminPage = () => {
     const { name, address } = selectedStation;
 
     const handleEditToggle = () => {
+
+      if (isEditing) {
+        chargers.forEach((charger) => {
+          fetch(`http://localhost:8080/api/chargers/${charger.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(charger),
+          })
+          .then((res) => {
+            if (!res.ok) throw new Error('Erro ao atualizar carregador');
+          })
+          .catch((err) => console.error(err));
+        });
+      }
+      
       setIsEditing((prev) => !prev);
     };
 

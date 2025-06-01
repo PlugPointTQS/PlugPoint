@@ -2,8 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import HomePage from './HomePage';
 import MyReservations from './MyReservations';
-import AdminPage from './AdminPage';
 
+import Management from './AdminPage';
 
 
 function App() {
@@ -16,13 +16,14 @@ function App() {
             <Link to="/">Home</Link>
             <Link to="/adminPage">Management</Link>
             <Link to="/reservations">My Reservations</Link>
+            <Link to='/management'>Management</Link>
           </div>
         </nav>
         
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/home" element={<HomePage />} />
-          <Route path="/adminPage" element={<AdminPage />} />
+          <Route path="/management" element={<Management />} />
           <Route path="/reservations" element={<MyReservations />} />
         </Routes>
       </div>
