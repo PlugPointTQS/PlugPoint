@@ -1,0 +1,113 @@
+/* TripPlannerPage.css */
+
+.trip-planner-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #f6fef9;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .trip-planner-container h2 {
+    margin-bottom: 1.5rem;
+    color: #22613d;
+  }
+  
+  .trip-inputs {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  
+  .trip-inputs input {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  .trip-inputs button {
+    background: #2e8b57;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s ease;
+  }
+  
+  .trip-inputs button:hover {
+    background: #276f49;
+  }
+  
+  .error-message {
+    color: #c0392b;
+    background: #ffeae6;
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .route-summary {
+    background: #e0f6e9;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .route-summary h3 {
+    margin-top: 0;
+    color: #1b4332;
+  }
+  
+  .charging-stops h3 {
+    margin-bottom: 1rem;
+    color: #22613d;
+  }
+  
+  .charging-stops ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .station-card {
+    background: #ffffff;
+    border: 1px solid #cbe9d8;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .station-card p {
+    margin: 0.2rem 0;
+    font-size: 0.95rem;
+  }
+  
+  .station-card button {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #2e8b57;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  
+  .station-card button:hover {
+    background: #246b44;
+  }
+
+  .leaflet {
+    height: 500px;
+    width: 100%;
+    margin-top: 1rem;
+    border-radius: 8px;
+  }
+  

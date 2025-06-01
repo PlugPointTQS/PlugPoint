@@ -3,6 +3,10 @@ import './App.css';
 import HomePage from './HomePage';
 import MyReservations from './MyReservations';
 import AdminPage from './AdminPage';
+import TripPlannerPage from './TripPlannerPage';
+
+
+
 
 
 
@@ -16,6 +20,7 @@ function App() {
             <Link to="/">Home</Link>
             <Link to="/adminPage">Management</Link>
             <Link to="/reservations">My Reservations</Link>
+            <Link to="/trip-planner">Trip Planner</Link>
           </div>
         </nav>
         
@@ -24,6 +29,7 @@ function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/adminPage" element={<AdminPage />} />
           <Route path="/reservations" element={<MyReservations />} />
+          <Route path="/trip-planner" element={<TripPlannerPage />} />
         </Routes>
       </div>
     </Router>

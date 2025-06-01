@@ -10,15 +10,15 @@ const chargerIcon = new L.Icon({
   iconAnchor: [20, 40],
 });
 const getLocIcon = new L.Icon({
-  iconUrl: '/getLoc.png',
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
+  iconUrl: '/newcheckpoint.png',
+  iconSize: [70, 70],
+  iconAnchor: [35, 50],
 });
 
 const CITIES = [
   'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco', 'Coimbra', 'Evora', 'Faro',
   'Guarda', 'Leiria', 'Lisboa', 'Portalegre', 'Porto', 'Santarem', 'Setubal',
-  'Viana do Castelo', 'Vila Real', 'Viseu'
+  'Viana do Castelo', 'Vila Real', 'Viseu', 'Mirandela', 'Valpaços'
 ];
 
 const dist = (la1, lo1, la2, lo2) => {
@@ -139,7 +139,8 @@ export default function HomePage() {
               eventHandlers={{ click: () => openDetails(s) }} />
           ))}
           {userLoc && (
-            <Marker position={[userLoc.lat, userLoc.lng]} icon={getLocIcon}>
+            <Marker position={[userLoc.lat, userLoc.lng]} icon={getLocIcon}
+            zIndexOffset={1000}>
               <Popup>{locLabel || 'Localização'}</Popup>
             </Marker>
           )}
