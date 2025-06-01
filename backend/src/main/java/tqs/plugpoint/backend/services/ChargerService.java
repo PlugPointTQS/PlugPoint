@@ -6,6 +6,7 @@ import tqs.plugpoint.backend.entities.Charger;
 import tqs.plugpoint.backend.repositories.ChargerRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -33,4 +34,16 @@ public class ChargerService {
     public void deleteCharger(Long id) {
         chargerRepository.deleteById(id);
     }
+
+    public Charger updateCharger(Long id, Charger updatedCharger) {
+        Charger charger = chargerRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Charger not found"));
+
+        charger.setType(updatedCharger.getType());
+        charger.setPower(updatedCharger.getPower());
+        charger.setStatus(updatedCharger.getStatus());
+
+        return chargerRepository.save(charger);
+    }
+
 }

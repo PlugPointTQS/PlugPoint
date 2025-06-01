@@ -7,6 +7,7 @@ import tqs.plugpoint.backend.entities.Charger;
 import tqs.plugpoint.backend.services.ChargerService;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/chargers")
@@ -42,4 +43,15 @@ public class ChargerController {
         chargerService.deleteCharger(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Charger> updateCharger(@PathVariable Long id, @RequestBody Charger updatedCharger) {
+        try {
+            Charger charger = chargerService.updateCharger(id, updatedCharger);
+            return ResponseEntity.ok(charger);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
