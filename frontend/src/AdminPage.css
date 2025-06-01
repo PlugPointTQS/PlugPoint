@@ -346,3 +346,143 @@
   border: 1px solid #ccc;
   margin-bottom: 0.5rem;
 }
+
+:root {
+  --modal-bg: #13293d;
+  --modal-border: #2b6cb0;
+  --input-bg: #1c3a57;
+  --input-text: #fff;
+  --input-border: #4a90e2;
+  --btn-main: #3182ce;
+  --btn-main-hover: #2c5282;
+  --btn-accent: #38a169;
+  --btn-cancel: #e53e3e;
+  --btn-delete: #c53030;
+  --white: #fff;
+  --radius: 8px;
+}
+
+/* NOVA ESTAÇÃO */
+.edit-modal {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--modal-bg);
+  padding: 2rem;
+  border: 2px solid var(--modal-border);
+  border-radius: var(--radius);
+  z-index: 1000;
+  width: 420px;
+  color: var(--white);
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+.edit-modal h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: var(--white);
+}
+
+.edit-modal input,
+.edit-modal select {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.8rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--input-text);
+}
+
+.edit-modal select {
+  background-color: var(--input-bg);
+}
+
+.edit-modal .modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.edit-modal button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease-in-out;
+}
+
+.edit-modal button:hover {
+  filter: brightness(1.1);
+}
+
+.edit-modal .edit-button {
+  background-color: var(--btn-accent);
+  color: var(--white);
+  margin-top: 0.5rem;
+}
+
+.edit-modal .edit-button2,
+.edit-modal .modal-actions button:first-child {
+  background-color: var(--btn-main);
+  color: var(--white);
+}
+
+.edit-modal .modal-actions .cancel-button {
+  background-color: var(--btn-cancel);
+  color: var(--white);
+}
+
+.edit-modal ul {
+  list-style: none;
+  margin-top: 1rem;
+  padding-left: 0;
+  color: var(--white);
+  font-size: 0.95rem;
+}
+
+.edit-modal ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+  padding-left: 0.5rem;
+  border-left: 3px solid var(--btn-main);
+}
+
+.edit-modal .delete-charger-btn {
+  background-color: var(--btn-delete);
+  color: var(--white);
+  border: none;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  margin-left: 1rem;
+  cursor: pointer;
+}
+
+.edit-modal .delete-charger-btn:hover {
+  background-color: #9b2c2c;
+}
+
+/* botão fora do modal */
+.admin-content .edit-button2 {
+  margin: 1rem;
+  background-color: var(--btn-main);
+  color: var(--white);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius);
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.admin-content .edit-button2:hover {
+  background-color: var(--btn-main-hover);
+}

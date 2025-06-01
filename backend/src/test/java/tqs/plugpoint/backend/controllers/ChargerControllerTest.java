@@ -65,5 +65,23 @@ public class ChargerControllerTest {
                         .content(objectMapper.writeValueAsString(updated)))
                 .andExpect(status().isNotFound());
     }
-}
 
+    @Test
+    void testCreateCharger_success() throws Exception {
+        Charger newCharger = Charger.builder()
+            .stationId(2L)
+            .power(22.0)
+            .status(Charger.ChargerStatus.AVAILABLE)
+            .type(Charger.ChargerType.TYPE2)
+            .build();
+
+        Mockito.when(chargerService.createCharger(any())).thenReturn(newCharger);
+
+        mockMvc.perform(post("/api/chargers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newCharger)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.power").value(22.0));
+    }
+
+}
