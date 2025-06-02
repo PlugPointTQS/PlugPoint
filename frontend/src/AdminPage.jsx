@@ -21,6 +21,17 @@ const AdminPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const mapRef = useRef(null);
 
+  const [isAddStationModalOpen, setIsAddStationModalOpen] = useState(false);
+  const [newStation, setNewStation] = useState({
+    name: '',
+    address: '',
+    latitude: '',
+    longitude: '',
+  });
+  const [newChargers, setNewChargers] = useState([]);
+  const [tempCharger, setTempCharger] = useState({ type: 'TYPE2', power: '', status: 'AVAILABLE' });
+
+
   useEffect(() => {
     fetch('http://localhost:8080/api/stations')
       .then((res) => res.json())
@@ -78,7 +89,6 @@ const AdminPage = () => {
     const { name, address } = selectedStation;
 
     const handleEditToggle = () => {
-
       if (isEditing) {
         chargers.forEach((charger) => {
           fetch(`http://localhost:8080/api/chargers/${charger.id}`, {
@@ -239,6 +249,89 @@ const AdminPage = () => {
       <div className="admin-content">
         {activeTab === 'stations' && (
           <div className="admin-section admin-grid">
+            <button className="edit-button2" onClick={() => setIsAddStationModalOpen(true)}>➕ Nova Estação</button>
+            {isAddStationModalOpen && (
+              <>
+                <div className="modal-backdrop" onClick={() => setIsAddStationModalOpen(false)} />
+                <div className="edit-modal">
+                  <h3>Nova Estação</h3>
+
+                  <input placeholder="Nome" value={newStation.name} onChange={(e) => setNewStation({ ...newStation, name: e.target.value })} />
+                  <input placeholder="Morada" value={newStation.address} onChange={(e) => setNewStation({ ...newStation, address: e.target.value })} />
+                  <input placeholder="Latitude" value={newStation.latitude} onChange={(e) => setNewStation({ ...newStation, latitude: e.target.value })} />
+                  <input placeholder="Longitude" value={newStation.longitude} onChange={(e) => setNewStation({ ...newStation, longitude: e.target.value })} />
+
+                  <h4>Adicionar Charger</h4>
+                  <input placeholder="Potência" value={tempCharger.power} onChange={(e) => setTempCharger({ ...tempCharger, power: e.target.value })} />
+                  <select value={tempCharger.type} onChange={(e) => setTempCharger({ ...tempCharger, type: e.target.value })}>
+                    <option value="TYPE2">TYPE2</option>
+                    <option value="CHADEMO">CHADEMO</option>
+                    <option value="CCS">CCS</option>
+                    <option value="TESLA">TESLA</option>
+                    <option value="AC">AC</option>
+                    <option value="DC">DC</option>
+                  </select>
+                  <select value={tempCharger.status} onChange={(e) => setTempCharger({ ...tempCharger, status: e.target.value })}>
+                    <option value="AVAILABLE">AVAILABLE</option>
+                    <option value="IN_USE">IN_USE</option>
+                    <option value="MAINTENANCE">MAINTENANCE</option>
+                  </select>
+                  <button className="edit-button" onClick={() => {
+                    setNewChargers([...newChargers, tempCharger]);
+                    setTempCharger({ type: 'TYPE2', power: '', status: 'AVAILABLE' });
+                  }}>Adicionar Charger</button>
+
+                  <ul style={{ marginTop: '1rem' }}>
+                    {newChargers.map((ch, i) => (
+                      <li key={i}>
+                        🔌 {ch.type} - {ch.power} kW - {ch.status}
+                        <button
+                          className="delete-charger-btn"
+                          onClick={() => {
+                            setNewChargers(newChargers.filter((_, index) => index !== i));
+                          }}
+                        >
+                          ❌
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="modal-actions">
+                    <button onClick={() => {
+                      // 1. Criar estação
+                      fetch('http://localhost:8080/api/stations', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newStation),
+                      })
+                        .then(res => res.json())
+                        .then(createdStation => {
+                          // 2. Criar carregadores associados
+                          newChargers.forEach(ch => {
+                            fetch('http://localhost:8080/api/chargers', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ ...ch, stationId: createdStation.id }),
+                            });
+                          });
+                          // Reset
+                          setIsAddStationModalOpen(false);
+                          setNewStation({ name: '', address: '', latitude: '', longitude: '' });
+                          setNewChargers([]);
+                          // Recarrega estações
+                          fetch('http://localhost:8080/api/stations')
+                            .then((res) => res.json())
+                            .then((data) => setStations(data));
+                        });
+                    }}>✅ Criar Estação</button>
+
+                    <button className="cancel-button" onClick={() => setIsAddStationModalOpen(false)}>Cancelar</button>
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="map-column">
               <MapContainer
                 center={[39.5, -8.0]}
