@@ -68,13 +68,42 @@ export default function TripPlannerPage() {
     return await res.json();
   };
 
+  const handleBook = async (chargerId, stationName, type, power, index) => {
+    const userId = 1;
+    const now = new Date();
+    const startTime = now.toISOString();
+    const endTime = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+
+    const reservationData = {
+      userId,
+      chargerId,
+      startTime,
+      endTime,
+      status: "CONFIRMED"
+    };
+
+    try {
+      const res = await fetch('http://localhost:8080/api/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reservationData),
+      });
+
+      if (!res.ok) throw new Error();
+
+      alert(`Reserva criada com sucesso para: ${stationName} - ${type} ${power} kW`);
+    } catch (err) {
+      alert("Erro ao fazer a reserva.");
+    }
+  };
+
   const calculateDistance = (a, b) => {
     const R = 6371;
     const dLat = (b[0] - a[0]) * Math.PI / 180;
     const dLon = (b[1] - a[1]) * Math.PI / 180;
     const lat1 = a[0] * Math.PI / 180;
     const lat2 = b[0] * Math.PI / 180;
-    const aVal = Math.sin(dLat/2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon/2) ** 2;
+    const aVal = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(aVal), Math.sqrt(1 - aVal));
   };
 
@@ -97,9 +126,9 @@ export default function TripPlannerPage() {
     setRoute(path);
 
     const stations = await fetchStations();
-    const filtered = stations.filter(station => {
-      return path.some(([lat, lon]) => calculateDistance([lat, lon], [station.latitude, station.longitude]) < 30);
-    });
+    const filtered = stations.filter(station =>
+      path.some(([lat, lon]) => calculateDistance([lat, lon], [station.latitude, station.longitude]) < 30)
+    );
 
     if (filtered.length === 0) {
       setError('Nenhuma estação encontrada ao longo da rota. Tente outro trajeto ou ajuste os filtros.');
@@ -111,10 +140,6 @@ export default function TripPlannerPage() {
       setStationChargers(Object.fromEntries(chargerData));
       mapRef.current?.flyTo(path[Math.floor(path.length / 2)], 8);
     }
-  };
-
-  const handleBook = (stationId) => {
-    navigate(`/book/${stationId}`);
   };
 
   const onOriginChange = (val) => {
@@ -186,20 +211,26 @@ export default function TripPlannerPage() {
       <div className="map">
         <MapContainer center={[39.5, -8]} zoom={7} className="leaflet" ref={mapRef}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {originCoord && <Marker position={originCoord} icon={startIcon} zIndexOffset={1000}><Popup>Origem</Popup></Marker>}
-          {destCoord && <Marker position={destCoord} icon={endIcon} zIndexOffset={1000}><Popup>Destino</Popup></Marker>}
-          {route && <Polyline positions={route} color="blue" />} 
+          {originCoord && <Marker position={originCoord} icon={startIcon}><Popup>Origem</Popup></Marker>}
+          {destCoord && <Marker position={destCoord} icon={endIcon}><Popup>Destino</Popup></Marker>}
+          {route && <Polyline positions={route} color="blue" />}
           {chargingStops.map(st => (
             <Marker key={st.id} position={[st.latitude, st.longitude]} icon={chargerIcon}>
               <Popup>
                 <b>{st.name}</b><br />
                 {st.address}<br />
                 {(stationChargers[st.id] || []).map((c, i) => (
-                  <div key={i}>
+                  <div key={i} style={{ marginBottom: '0.5rem' }}>
                     <p>🔌 <strong>{c.type}</strong> - {c.power} kW - <em>{c.status}</em></p>
+                    <button
+                      disabled={c.status !== 'AVAILABLE'}
+                      onClick={() => handleBook(c.id, st.name, c.type, c.power, i)}
+                      className="popup-reserve-btn"
+                    >
+                      Reservar
+                    </button>
                   </div>
                 ))}
-                <button onClick={() => handleBook(st.id)}>Reservar</button>
               </Popup>
             </Marker>
           ))}

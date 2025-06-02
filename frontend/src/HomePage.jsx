@@ -41,7 +41,6 @@ export default function HomePage() {
   const [typeFilter, setTypeFilter] = useState('');
   const [powerValue, setPowerValue] = useState(250);
   const [distanceValue, setDistanceValue] = useState(250);
-
   const mapRef = useRef(null);
 
   useEffect(() => {
@@ -110,12 +109,40 @@ export default function HomePage() {
 
   const applyFilters = s => {
     const chargers = stationChargers[s.id] || [];
-
     if (typeFilter && !chargers.some(c => c.type === typeFilter)) return false;
     if (!chargers.some(c => c.power <= powerValue)) return false;
     if (s.distance && s.distance > distanceValue) return false;
-
     return true;
+  };
+
+  const createReservation = async (chargerId, stationName, stationAddress, index) => {
+    const userId = 1;
+    const now = new Date();
+    const startTime = now.toISOString();
+    const endTime = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+
+    const reservationData = {
+      userId,
+      chargerId,
+      startTime,
+      endTime,
+      status: "CONFIRMED"
+    };
+
+    try {
+      const response = await fetch('http://localhost:8080/api/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reservationData),
+      });
+
+      if (!response.ok) throw new Error("Erro ao criar reserva");
+
+      alert(`Reserva criada com sucesso para: ${stationName} - Charger ${index + 1}`);
+    } catch (error) {
+      console.error("Erro na reserva:", error);
+      alert("Erro ao fazer a reserva.");
+    }
   };
 
   const displayed = stations.filter(applyFilters);
@@ -139,8 +166,7 @@ export default function HomePage() {
               eventHandlers={{ click: () => openDetails(s) }} />
           ))}
           {userLoc && (
-            <Marker position={[userLoc.lat, userLoc.lng]} icon={getLocIcon}
-            zIndexOffset={1000}>
+            <Marker position={[userLoc.lat, userLoc.lng]} icon={getLocIcon} zIndexOffset={1000}>
               <Popup>{locLabel || 'Localização'}</Popup>
             </Marker>
           )}
@@ -242,8 +268,15 @@ export default function HomePage() {
                 <h3 className="station-name">{selected.name}</h3>
                 <h3 className="station-address">{selected.address}</h3>
               </div>
-              <img src="public/getLoc.png" alt="Map" className="station-map-icon" />
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${selected.latitude},${selected.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src="/getLoc.png" alt="Ver no Google Maps" className="station-map-icon" />
+              </a>
             </div>
+
 
             <div className="chargers-list">
               {(stationChargers[selected.id] || []).map((c, i) => (
@@ -256,7 +289,9 @@ export default function HomePage() {
                       {c.status}
                     </p>
                   </div>
-                  <button className="reserve-btn">Reserve</button>
+                  <button className="reserve-btn" onClick={() => createReservation(c.id, selected.name, selected.address, i)}>
+                    Reservar
+                  </button>
                 </div>
               ))}
               <p className="chargers-count">
