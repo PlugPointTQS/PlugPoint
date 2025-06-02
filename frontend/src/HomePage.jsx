@@ -43,6 +43,20 @@ export default function HomePage() {
   const [distanceValue, setDistanceValue] = useState(250);
   const mapRef = useRef(null);
 
+  const [favorites, setFavorites] = useState(() => {
+    const stored = localStorage.getItem("favorites");
+    return stored ? JSON.parse(stored) : [];
+  });
+  
+  const toggleFavorite = (stationId) => {
+    const updated = favorites.includes(stationId)
+      ? favorites.filter(id => id !== stationId)
+      : [...favorites, stationId];
+  
+    setFavorites(updated);
+    localStorage.setItem("favorites", JSON.stringify(updated));
+  };
+
   useEffect(() => {
     fetch('http://localhost:8080/api/stations')
       .then(r => r.json())
@@ -277,7 +291,6 @@ export default function HomePage() {
               </a>
             </div>
 
-
             <div className="chargers-list">
               {(stationChargers[selected.id] || []).map((c, i) => (
                 <div key={i} className="charger-card">
@@ -285,9 +298,7 @@ export default function HomePage() {
                     <strong>Charger {i + 1}</strong>
                     <p>Type: {c.type}</p>
                     <p>Power: {c.power} kW</p>
-                    <p className={c.status === 'AVAILABLE' ? 'available' : 'unavailable'}>
-                      {c.status}
-                    </p>
+                    <p className={c.status === 'AVAILABLE' ? 'available' : 'unavailable'}>{c.status}</p>
                   </div>
                   <button className="reserve-btn" onClick={() => createReservation(c.id, selected.name, selected.address, i)}>
                     Reservar
@@ -300,9 +311,12 @@ export default function HomePage() {
             </div>
 
             <div className="station-footer">
-              <button className="fav-btn" onClick={() => alert("Adicionado aos favoritos!")}>
-                <img src="/heart-icon.png" alt="Favorito" />
-                <span>Adicionar aos favoritos</span>
+              <button className="fav-btn" onClick={() => toggleFavorite(selected.id)}>
+                <img
+                  src={favorites.includes(selected.id) ? "public/heart-icon.png" : "public/heart-outline.png"}
+                  className="heart-icon"
+                />
+                <span>{favorites.includes(selected.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}</span>
               </button>
             </div>
 
