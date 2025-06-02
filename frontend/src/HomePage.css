@@ -351,32 +351,6 @@
   margin-top: 0.5rem;
 }
 
-.fav-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: #fff;
-  border: 1px solid #d04d4d;
-  color: #d04d4d;
-  padding: 0.5rem 0.9rem;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
-}
-
-.fav-btn:hover {
-  background: #d04d4d;
-  color: #fff;
-}
-
-.fav-btn img {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-}
-
 .filters-modern {
   display: flex;
   flex-direction: column;
@@ -436,6 +410,34 @@
 .filter-label strong {
   margin-left: 0.4rem;
   color: #2e8b57;
+}
+
+.fav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 2px solid #d33;
+  border-radius: 8px;
+  color: #d33;
+  font-weight: bold;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fav-btn:hover {
+  background: #d33;
+  color: white;
+}
+
+.fav-btn:hover img {
+  filter: brightness(0) invert(1);
+}
+
+.heart-icon {
+  width: 20px;
+  height: 20px;
 }
 
 

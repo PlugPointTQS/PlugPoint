@@ -10,15 +10,15 @@ const chargerIcon = new L.Icon({
   iconAnchor: [20, 40],
 });
 const getLocIcon = new L.Icon({
-  iconUrl: '/getLoc.png',
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
+  iconUrl: '/newcheckpoint.png',
+  iconSize: [70, 70],
+  iconAnchor: [35, 50],
 });
 
 const CITIES = [
   'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco', 'Coimbra', 'Evora', 'Faro',
   'Guarda', 'Leiria', 'Lisboa', 'Portalegre', 'Porto', 'Santarem', 'Setubal',
-  'Viana do Castelo', 'Vila Real', 'Viseu'
+  'Viana do Castelo', 'Vila Real', 'Viseu', 'Mirandela', 'Valpaços'
 ];
 
 const dist = (la1, lo1, la2, lo2) => {
@@ -41,8 +41,21 @@ export default function HomePage() {
   const [typeFilter, setTypeFilter] = useState('');
   const [powerValue, setPowerValue] = useState(250);
   const [distanceValue, setDistanceValue] = useState(250);
-
   const mapRef = useRef(null);
+
+  const [favorites, setFavorites] = useState(() => {
+    const stored = localStorage.getItem("favorites");
+    return stored ? JSON.parse(stored) : [];
+  });
+  
+  const toggleFavorite = (stationId) => {
+    const updated = favorites.includes(stationId)
+      ? favorites.filter(id => id !== stationId)
+      : [...favorites, stationId];
+  
+    setFavorites(updated);
+    localStorage.setItem("favorites", JSON.stringify(updated));
+  };
 
   useEffect(() => {
     fetch('http://localhost:8080/api/stations')
@@ -110,12 +123,40 @@ export default function HomePage() {
 
   const applyFilters = s => {
     const chargers = stationChargers[s.id] || [];
-
     if (typeFilter && !chargers.some(c => c.type === typeFilter)) return false;
     if (!chargers.some(c => c.power <= powerValue)) return false;
     if (s.distance && s.distance > distanceValue) return false;
-
     return true;
+  };
+
+  const createReservation = async (chargerId, stationName, stationAddress, index) => {
+    const userId = 1;
+    const now = new Date();
+    const startTime = now.toISOString();
+    const endTime = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
+
+    const reservationData = {
+      userId,
+      chargerId,
+      startTime,
+      endTime,
+      status: "CONFIRMED"
+    };
+
+    try {
+      const response = await fetch('http://localhost:8080/api/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reservationData),
+      });
+
+      if (!response.ok) throw new Error("Erro ao criar reserva");
+
+      alert(`Reserva criada com sucesso para: ${stationName} - Charger ${index + 1}`);
+    } catch (error) {
+      console.error("Erro na reserva:", error);
+      alert("Erro ao fazer a reserva.");
+    }
   };
 
   const displayed = stations.filter(applyFilters);
@@ -139,7 +180,7 @@ export default function HomePage() {
               eventHandlers={{ click: () => openDetails(s) }} />
           ))}
           {userLoc && (
-            <Marker position={[userLoc.lat, userLoc.lng]} icon={getLocIcon}>
+            <Marker position={[userLoc.lat, userLoc.lng]} icon={getLocIcon} zIndexOffset={1000}>
               <Popup>{locLabel || 'Localização'}</Popup>
             </Marker>
           )}
@@ -241,7 +282,13 @@ export default function HomePage() {
                 <h3 className="station-name">{selected.name}</h3>
                 <h3 className="station-address">{selected.address}</h3>
               </div>
-              <img src="public/getLoc.png" alt="Map" className="station-map-icon" />
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${selected.latitude},${selected.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src="/getLoc.png" alt="Ver no Google Maps" className="station-map-icon" />
+              </a>
             </div>
 
             <div className="chargers-list">
@@ -251,11 +298,11 @@ export default function HomePage() {
                     <strong>Charger {i + 1}</strong>
                     <p>Type: {c.type}</p>
                     <p>Power: {c.power} kW</p>
-                    <p className={c.status === 'AVAILABLE' ? 'available' : 'unavailable'}>
-                      {c.status}
-                    </p>
+                    <p className={c.status === 'AVAILABLE' ? 'available' : 'unavailable'}>{c.status}</p>
                   </div>
-                  <button className="reserve-btn">Reserve</button>
+                  <button className="reserve-btn" onClick={() => createReservation(c.id, selected.name, selected.address, i)}>
+                    Reservar
+                  </button>
                 </div>
               ))}
               <p className="chargers-count">
@@ -264,9 +311,12 @@ export default function HomePage() {
             </div>
 
             <div className="station-footer">
-              <button className="fav-btn" onClick={() => alert("Adicionado aos favoritos!")}>
-                <img src="/heart-icon.png" alt="Favorito" />
-                <span>Adicionar aos favoritos</span>
+              <button className="fav-btn" onClick={() => toggleFavorite(selected.id)}>
+                <img
+                  src={favorites.includes(selected.id) ? "public/heart-icon.png" : "public/heart-outline.png"}
+                  className="heart-icon"
+                />
+                <span>{favorites.includes(selected.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}</span>
               </button>
             </div>
 
