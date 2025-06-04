@@ -1,0 +1,22 @@
+name: Deploy PlugPoint
+
+on:
+  push:
+    branches:
+      - deploy
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Remove old containers, images and volumes
+        run: |
+          docker compose -f compose.yml down --volumes --remove-orphans
+          docker system prune -af
+          docker volume prune -f
+
+      - name: Build and deploy with Docker Compose
+        run: docker compose -f compose.yml up -d --build
