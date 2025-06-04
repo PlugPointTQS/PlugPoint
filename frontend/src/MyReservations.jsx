@@ -10,7 +10,7 @@ function MyReservations() {
   useEffect(() => {
     const fetchAllReservationDetails = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/reservations/user/${userId}`);
+        const res = await fetch(`http://deti-tqs-13.ua.pt:8080/api/reservations/user/${userId}`);
         const reservationsData = await res.json();
         setReservations(reservationsData);
 
@@ -21,12 +21,12 @@ function MyReservations() {
           const chargerId = reservation.chargerId;
 
           if (!chargerMapTemp[chargerId]) {
-            const chargerRes = await fetch(`http://localhost:8080/api/chargers/${chargerId}`);
+            const chargerRes = await fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/${chargerId}`);
             const charger = await chargerRes.json();
             chargerMapTemp[chargerId] = charger;
 
             if (charger.stationId && !stationMapTemp[charger.stationId]) {
-              const stationRes = await fetch(`http://localhost:8080/api/stations/${charger.stationId}`);
+              const stationRes = await fetch(`http://deti-tqs-13.ua.pt:8080/api/stations/${charger.stationId}`);
               const station = await stationRes.json();
               stationMapTemp[charger.stationId] = station;
             }
@@ -45,7 +45,7 @@ function MyReservations() {
 
   const handleCancel = async (reservationId) => {
     try {
-      await fetch(`http://localhost:8080/api/reservations/${reservationId}/cancel?userId=${userId}`, {
+      await fetch(`http://deti-tqs-13.ua.pt:8080/api/reservations/${reservationId}/cancel?userId=${userId}`, {
         method: 'POST',
       });
       setReservations(prev => prev.map(r => r.id === reservationId ? {...r, status: 'CANCELLED'} : r));

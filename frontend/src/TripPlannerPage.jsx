@@ -59,12 +59,12 @@ export default function TripPlannerPage() {
   };
 
   const fetchStations = async () => {
-    const res = await fetch('http://localhost:8080/api/stations');
+    const res = await fetch('http://deti-tqs-13.ua.pt:8080/api/stations');
     return await res.json();
   };
 
   const fetchChargers = async (stationId) => {
-    const res = await fetch(`http://localhost:8080/api/chargers/station/${stationId}`);
+    const res = await fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/station/${stationId}`);
     return await res.json();
   };
 
@@ -83,7 +83,7 @@ export default function TripPlannerPage() {
     };
 
     try {
-      const res = await fetch('http://localhost:8080/api/reservations', {
+      const res = await fetch('http://deti-tqs-13.ua.pt:8080/api/reservations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reservationData),

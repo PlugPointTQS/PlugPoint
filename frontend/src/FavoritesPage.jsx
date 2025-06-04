@@ -9,7 +9,7 @@ export default function FavoritesPage() {
   });
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/stations')
+    fetch('http://deti-tqs-13.ua.pt:8080/api/stations')
       .then(res => res.json())
       .then(data => setStations(data));
   }, []);

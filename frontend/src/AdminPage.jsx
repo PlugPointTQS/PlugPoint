@@ -33,7 +33,7 @@ const AdminPage = () => {
 
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/stations')
+    fetch('http://deti-tqs-13.ua.pt:8080/api/stations')
       .then((res) => res.json())
       .then((data) => setStations(data))
       .catch((err) => console.error('Erro ao carregar estações:', err));
@@ -48,7 +48,7 @@ const AdminPage = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:8080/api/stations/${station.id}`);
+      const res = await fetch(`http://deti-tqs-13.ua.pt:8080/api/stations/${station.id}`);
       const fullStation = res.ok ? await res.json() : station;
       setSelectedStation(fullStation);
     } catch (err) {
@@ -58,7 +58,7 @@ const AdminPage = () => {
 
     try {
       setIsLoadingChargers(true);
-      const chargersRes = await fetch(`http://localhost:8080/api/chargers/station/${station.id}`);
+      const chargersRes = await fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/station/${station.id}`);
       if (!chargersRes.ok) throw new Error('Falha carregar carregadores');
       const chargersData = await chargersRes.json();
       setChargers(chargersData);
@@ -91,7 +91,7 @@ const AdminPage = () => {
     const handleEditToggle = () => {
       if (isEditing) {
         chargers.forEach((charger) => {
-          fetch(`http://localhost:8080/api/chargers/${charger.id}`, {
+          fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/${charger.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(charger),
@@ -300,7 +300,7 @@ const AdminPage = () => {
                   <div className="modal-actions">
                     <button onClick={() => {
                       // 1. Criar estação
-                      fetch('http://localhost:8080/api/stations', {
+                      fetch('http://deti-tqs-13.ua.pt:8080/api/stations', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(newStation),
@@ -309,7 +309,7 @@ const AdminPage = () => {
                         .then(createdStation => {
                           // 2. Criar carregadores associados
                           newChargers.forEach(ch => {
-                            fetch('http://localhost:8080/api/chargers', {
+                            fetch('http://deti-tqs-13.ua.pt:8080/api/chargers', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ ...ch, stationId: createdStation.id }),
@@ -320,7 +320,7 @@ const AdminPage = () => {
                           setNewStation({ name: '', address: '', latitude: '', longitude: '' });
                           setNewChargers([]);
                           // Recarrega estações
-                          fetch('http://localhost:8080/api/stations')
+                          fetch('http://deti-tqs-13.ua.pt:8080/api/stations')
                             .then((res) => res.json())
                             .then((data) => setStations(data));
                         });

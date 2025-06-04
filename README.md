@@ -13,7 +13,7 @@ docker compose up --build
 
 Depois de correr o comando acima, o site estará disponível em:
 
-[http://localhost:3000](http://localhost:3000)
+[http://deti-tqs-13.ua.pt:3000](http://deti-tqs-13.ua.pt:3000)
 
 E a API na porta *8080*
 

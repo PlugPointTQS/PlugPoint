@@ -58,13 +58,13 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/stations')
+    fetch('http://deti-tqs-13.ua.pt:8080/api/stations')
       .then(r => r.json())
       .then(async data => {
         setStations(data);
         const pairs = await Promise.all(
           data.map(async s => {
-            const r = await fetch(`http://localhost:8080/api/chargers/station/${s.id}`);
+            const r = await fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/station/${s.id}`);
             const ch = await r.json();
             return [s.id, ch];
           })
@@ -144,7 +144,7 @@ export default function HomePage() {
     };
 
     try {
-      const response = await fetch('http://localhost:8080/api/reservations', {
+      const response = await fetch('http://deti-tqs-13.ua.pt:8080/api/reservations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reservationData),
@@ -163,7 +163,7 @@ export default function HomePage() {
 
   const openDetails = async s => {
     if (!stationChargers[s.id]) {
-      const r = await fetch(`http://localhost:8080/api/chargers/station/${s.id}`);
+      const r = await fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/station/${s.id}`);
       const ch = await r.json();
       setStationChargers(prev => ({ ...prev, [s.id]: ch }));
     }
