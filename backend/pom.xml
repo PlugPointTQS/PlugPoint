@@ -107,7 +107,7 @@
 			<version>7.14.0</version>
 			<scope>test</scope>
 		</dependency>
-
+		
 		<!-- Cucumber para JUnit -->
 		<dependency>
 			<groupId>io.cucumber</groupId>
@@ -115,7 +115,12 @@
 			<version>7.14.0</version>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+          <groupId>app.getxray</groupId>
+          <artifactId>xray-junit-extensions</artifactId>
+          <version>0.10.0</version>
+          <scope>test</scope>
+        </dependency>
 		<!-- Cucumber para integração com Spring Boot -->
 		<dependency>
 			<groupId>io.cucumber</groupId>
