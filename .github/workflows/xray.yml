@@ -26,8 +26,8 @@ jobs:
       - name: Import results to Xray
         uses: mikepenz/xray-action@v3
         with:
-          username: ${{ secrets.XRAY_ID }}
-          password: ${{ secrets.XRAY_SECRET }}
+          username: ${{ secrets.XRAY_CLIENT_ID }}
+          password: ${{ secrets.XRAY_CLIENT_SECRET }}
           testformat: "junit"
           testpaths: "backend/target/surefire-reports/TEST-*.xml"
           projectkey: "PP"
