@@ -19,4 +19,4 @@ jobs:
           docker volume prune -f
 
       - name: Build and deploy with Docker Compose
-        run: docker compose -f compose.yml up -d --build
+        run: docker compose -f docker-compose.yml up -d --build
