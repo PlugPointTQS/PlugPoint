@@ -1,11 +1,26 @@
-FROM node:21-alpine
+FROM node:18 AS builder
 
 WORKDIR /app
-
-COPY . .
-
+COPY package.json package-lock.json ./
 RUN npm install
 
-EXPOSE 5173
+COPY . .
+RUN npm run build
 
-CMD ["npm", "run", "dev"]
+# Serve with Nginx
+FROM nginx:alpine
+
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy custom Nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copy built files from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Expose port
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]

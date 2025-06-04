@@ -14,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://deti-tqs-13.ua.pt:3000")
+                        .allowedOrigins("http://deti-tqs-13.ua.pt:3000" , "deti-tqs-13.ua.pt")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
                         .allowedHeaders("*")
                         .allowCredentials(true);
