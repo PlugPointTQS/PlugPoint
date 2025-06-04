@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import app.getxray.xray.junit.customjunitxml.annotations.XrayTest;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 
-@WebMvcTest(ChargerController.class)
+@WebMvcTest(ChargingStationController.class)
 public class ChargingStationControllerTest{
     @Autowired
     private MockMvc mockMvc;
@@ -60,10 +60,10 @@ public class ChargingStationControllerTest{
         mockMvc.perform(post("/api/stations")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(station)))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Estação Teste"))
-                .andExpect(jsonPath("$.city").value("Porto"));
+                .andExpect(jsonPath("$.address").value("Porto"));
     }
 
 }
