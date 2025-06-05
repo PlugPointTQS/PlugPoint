@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import './AdminPage.css';
 import './MyReservations.css';
 import './HomePage.css';
+import StationStatsPanel from './components/StationStatsPanel';
 
 const chargerIcon = new L.Icon({
   iconUrl: '/battery-charging.png',
@@ -20,17 +21,15 @@ const AdminPage = () => {
   const [isLoadingChargers, setIsLoadingChargers] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const mapRef = useRef(null);
+  const statsMapRef = useRef(null);
 
   const [isAddStationModalOpen, setIsAddStationModalOpen] = useState(false);
-  const [newStation, setNewStation] = useState({
-    name: '',
-    address: '',
-    latitude: '',
-    longitude: '',
-  });
+  const [newStation, setNewStation] = useState({ name: '', address: '', latitude: '', longitude: '' });
   const [newChargers, setNewChargers] = useState([]);
   const [tempCharger, setTempCharger] = useState({ type: 'TYPE2', power: '', status: 'AVAILABLE' });
 
+  const [showStats, setShowStats] = useState(false);
+  const [statsStationId, setStatsStationId] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8080/api/stations')
@@ -70,6 +69,17 @@ const AdminPage = () => {
     }
   };
 
+  const handleSelectStationForStats = (station) => {
+    if (statsMapRef.current) {
+      statsMapRef.current.flyTo([station.latitude, station.longitude], 14, {
+        animate: true,
+        duration: 1.2,
+      });
+    }
+    setStatsStationId(station.id);
+    setShowStats(true);
+  };
+
   const closeModal = () => {
     setSelectedStation(null);
     setChargers([]);
@@ -85,7 +95,6 @@ const AdminPage = () => {
 
   const renderStationDetails = () => {
     if (!selectedStation) return null;
-
     const { name, address } = selectedStation;
 
     const handleEditToggle = () => {
@@ -96,13 +105,12 @@ const AdminPage = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(charger),
           })
-          .then((res) => {
-            if (!res.ok) throw new Error('Erro ao atualizar carregador');
-          })
-          .catch((err) => console.error(err));
+            .then((res) => {
+              if (!res.ok) throw new Error('Erro ao atualizar carregador');
+            })
+            .catch((err) => console.error(err));
         });
       }
-      
       setIsEditing((prev) => !prev);
     };
 
@@ -111,37 +119,14 @@ const AdminPage = () => {
     return (
       <>
         <div className="modal-backdrop" onClick={closeModal} />
-
-        <div
-          style={{
-            position: 'fixed',
-            top: '8%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 999,
-            width: 'min(500px, 92vw)',
-          }}
-        >
+        <div style={{ position: 'fixed', top: '8%', left: '50%', transform: 'translateX(-50%)', zIndex: 999, width: 'min(500px, 92vw)' }}>
           <div className="station-details" style={{ borderColor: '#1e90ff' }}>
             <div className="address-directions-container">
               <div className="station-address">
                 {isEditing ? (
                   <>
-                    <input
-                      value={selectedStation.name}
-                      onChange={(e) =>
-                        setSelectedStation((prev) => ({ ...prev, name: e.target.value }))
-                      }
-                      className="edit-input"
-                      autoFocus
-                    />
-                    <input
-                      value={selectedStation.address}
-                      onChange={(e) =>
-                        setSelectedStation((prev) => ({ ...prev, address: e.target.value }))
-                      }
-                      className="edit-input"
-                    />
+                    <input value={selectedStation.name} onChange={(e) => setSelectedStation((prev) => ({ ...prev, name: e.target.value }))} className="edit-input" autoFocus />
+                    <input value={selectedStation.address} onChange={(e) => setSelectedStation((prev) => ({ ...prev, address: e.target.value }))} className="edit-input" />
                   </>
                 ) : (
                   <>
@@ -162,38 +147,24 @@ const AdminPage = () => {
                       <h4>Charger {index + 1}</h4>
                       {isEditing ? (
                         <>
-                          <input
-                            value={charger.type}
-                            className="edit-input"
-                            onChange={(e) => {
-                              const newChargers = [...chargers];
-                              newChargers[index] = { ...charger, type: e.target.value };
-                              setChargers(newChargers);
-                            }}
-                          />
-                          <input
-                            value={charger.power}
-                            className="edit-input"
-                            onChange={(e) => {
-                              const newChargers = [...chargers];
-                              newChargers[index] = { ...charger, power: e.target.value };
-                              setChargers(newChargers);
-                            }}
-                          />
+                          <input value={charger.type} className="edit-input" onChange={(e) => {
+                            const newChargers = [...chargers];
+                            newChargers[index] = { ...charger, type: e.target.value };
+                            setChargers(newChargers);
+                          }} />
+                          <input value={charger.power} className="edit-input" onChange={(e) => {
+                            const newChargers = [...chargers];
+                            newChargers[index] = { ...charger, power: e.target.value };
+                            setChargers(newChargers);
+                          }} />
                           <div className="status-toggle">
                             {statusOptions.map((status) => (
                               <label key={status} className={`status-option ${getStatusClass(status)}`}>
-                                <input
-                                  type="radio"
-                                  name={`status-${index}`}
-                                  value={status}
-                                  checked={charger.status === status}
-                                  onChange={() => {
-                                    const newChargers = [...chargers];
-                                    newChargers[index] = { ...charger, status };
-                                    setChargers(newChargers);
-                                  }}
-                                />
+                                <input type="radio" name={`status-${index}`} value={status} checked={charger.status === status} onChange={() => {
+                                  const newChargers = [...chargers];
+                                  newChargers[index] = { ...charger, status };
+                                  setChargers(newChargers);
+                                }} />
                                 {status}
                               </label>
                             ))}
@@ -216,12 +187,9 @@ const AdminPage = () => {
 
             <div className="station-footer" style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
               <p style={{ flex: 1 }}>🔌 {chargers.length} charger{chargers.length !== 1 ? 's' : ''} registered</p>
-              <button className="edit-button2" onClick={handleEditToggle}>
-                {isEditing ? '✅ Confirmar' : '✏️ Editar'}
-              </button>
-              <button className="cancel-button" onClick={closeModal}>
-                Fechar
-              </button>
+              <button className="edit-button2" onClick={handleEditToggle}>{isEditing ? '✅ Confirmar' : '✏️ Editar'}</button>
+              <button className="cancel-button" onClick={closeModal}>Fechar</button>
+              <button className="edit-button2" onClick={() => { setStatsStationId(selectedStation.id); setShowStats(true); }}>📊 Estatísticas</button>
             </div>
           </div>
         </div>
@@ -234,104 +202,15 @@ const AdminPage = () => {
       <div className="admin-sidebar">
         <h2 className="admin-title">Administração</h2>
         <ul className="admin-nav">
-          <li className={activeTab === 'stations' ? 'active' : ''} onClick={() => setActiveTab('stations')}>
-            Gerir Estações
-          </li>
-          <li className={activeTab === 'stats' ? 'active' : ''} onClick={() => setActiveTab('stats')}>
-            Estatísticas
-          </li>
-          <li className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
-            Utilizadores
-          </li>
+          <li className={activeTab === 'stations' ? 'active' : ''} onClick={() => setActiveTab('stations')}>Gerir Estações</li>
+          <li className={activeTab === 'stats' ? 'active' : ''} onClick={() => setActiveTab('stats')}>Estatísticas</li>
+          <li className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>Utilizadores</li>
         </ul>
       </div>
 
       <div className="admin-content">
         {activeTab === 'stations' && (
           <div className="admin-section admin-grid">
-            <button className="edit-button2" onClick={() => setIsAddStationModalOpen(true)}>➕ Nova Estação</button>
-            {isAddStationModalOpen && (
-              <>
-                <div className="modal-backdrop" onClick={() => setIsAddStationModalOpen(false)} />
-                <div className="edit-modal">
-                  <h3>Nova Estação</h3>
-
-                  <input placeholder="Nome" value={newStation.name} onChange={(e) => setNewStation({ ...newStation, name: e.target.value })} />
-                  <input placeholder="Morada" value={newStation.address} onChange={(e) => setNewStation({ ...newStation, address: e.target.value })} />
-                  <input placeholder="Latitude" value={newStation.latitude} onChange={(e) => setNewStation({ ...newStation, latitude: e.target.value })} />
-                  <input placeholder="Longitude" value={newStation.longitude} onChange={(e) => setNewStation({ ...newStation, longitude: e.target.value })} />
-
-                  <h4>Adicionar Charger</h4>
-                  <input placeholder="Potência" value={tempCharger.power} onChange={(e) => setTempCharger({ ...tempCharger, power: e.target.value })} />
-                  <select value={tempCharger.type} onChange={(e) => setTempCharger({ ...tempCharger, type: e.target.value })}>
-                    <option value="TYPE2">TYPE2</option>
-                    <option value="CHADEMO">CHADEMO</option>
-                    <option value="CCS">CCS</option>
-                    <option value="TESLA">TESLA</option>
-                    <option value="AC">AC</option>
-                    <option value="DC">DC</option>
-                  </select>
-                  <select value={tempCharger.status} onChange={(e) => setTempCharger({ ...tempCharger, status: e.target.value })}>
-                    <option value="AVAILABLE">AVAILABLE</option>
-                    <option value="IN_USE">IN_USE</option>
-                    <option value="MAINTENANCE">MAINTENANCE</option>
-                  </select>
-                  <button className="edit-button" onClick={() => {
-                    setNewChargers([...newChargers, tempCharger]);
-                    setTempCharger({ type: 'TYPE2', power: '', status: 'AVAILABLE' });
-                  }}>Adicionar Charger</button>
-
-                  <ul style={{ marginTop: '1rem' }}>
-                    {newChargers.map((ch, i) => (
-                      <li key={i}>
-                        🔌 {ch.type} - {ch.power} kW - {ch.status}
-                        <button
-                          className="delete-charger-btn"
-                          onClick={() => {
-                            setNewChargers(newChargers.filter((_, index) => index !== i));
-                          }}
-                        >
-                          ❌
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="modal-actions">
-                    <button onClick={() => {
-                      // 1. Criar estação
-                      fetch('http://localhost:8080/api/stations', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newStation),
-                      })
-                        .then(res => res.json())
-                        .then(createdStation => {
-                          // 2. Criar carregadores associados
-                          newChargers.forEach(ch => {
-                            fetch('http://localhost:8080/api/chargers', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ ...ch, stationId: createdStation.id }),
-                            });
-                          });
-                          // Reset
-                          setIsAddStationModalOpen(false);
-                          setNewStation({ name: '', address: '', latitude: '', longitude: '' });
-                          setNewChargers([]);
-                          // Recarrega estações
-                          fetch('http://localhost:8080/api/stations')
-                            .then((res) => res.json())
-                            .then((data) => setStations(data));
-                        });
-                    }}>✅ Criar Estação</button>
-
-                    <button className="cancel-button" onClick={() => setIsAddStationModalOpen(false)}>Cancelar</button>
-                  </div>
-                </div>
-              </>
-            )}
-
             <div className="map-column">
               <MapContainer
                 center={[39.5, -8.0]}
@@ -340,25 +219,45 @@ const AdminPage = () => {
                 className="map-view"
                 whenCreated={(m) => (mapRef.current = m)}
               >
-                <TileLayer
-                  attribution="&copy; OpenStreetMap contributors"
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+                <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 {stations.map((s) => (
-                  <Marker
-                    key={s.id}
-                    position={[s.latitude, s.longitude]}
-                    icon={chargerIcon}
-                    eventHandlers={{ click: () => handleFlyTo(s) }}
-                  />
+                  <Marker key={s.id} position={[s.latitude, s.longitude]} icon={chargerIcon} eventHandlers={{ click: () => handleFlyTo(s) }} />
                 ))}
               </MapContainer>
             </div>
           </div>
         )}
+
+        {activeTab === 'stats' && (
+          <div className="admin-section admin-grid">
+            <div className="map-column">
+              <MapContainer
+                center={[39.5, -8.0]}
+                zoom={7}
+                scrollWheelZoom
+                className="map-view"
+                whenCreated={(m) => (statsMapRef.current = m)}
+              >
+                <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                {stations.map((s) => (
+                  <Marker key={s.id} position={[s.latitude, s.longitude]} icon={chargerIcon} eventHandlers={{ click: () => handleSelectStationForStats(s) }} />
+                ))}
+              </MapContainer>
+            </div>
+            {!showStats && (
+              <div className="placeholder">
+                <h3>Seleciona uma estação no mapa para ver estatísticas.</h3>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {selectedStation && renderStationDetails()}
+
+      {showStats && (
+        <StationStatsPanel stationId={statsStationId} onClose={() => setShowStats(false)} />
+      )}
     </div>
   );
 };
