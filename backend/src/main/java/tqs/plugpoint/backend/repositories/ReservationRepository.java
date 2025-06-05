@@ -15,6 +15,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     List<Reservation> findByChargerIdInAndStartTimeBetween(
         List<Long> chargerIds,
-        LocalDateTime start, LocalDateTime end);
+        LocalDateTime start, LocalDateTime to);
 
 }
