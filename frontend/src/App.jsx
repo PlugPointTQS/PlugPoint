@@ -5,6 +5,7 @@ import MyReservations from './MyReservations';
 import TripPlannerPage from './TripPlannerPage';
 import FavoritesPage from './FavoritesPage';
 import Management from './AdminPage';
+import MyStas from './MyStats';
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <div className="navbar-links">
             <Link to="/">Home</Link>
             <Link to="/reservations">My Reservations</Link>
+            <Link to="/mystats">My Stats</Link>
             <Link to="/trip-planner">Trip Planner</Link>
             <Link to="/favorites">Favoritos</Link>
             <Link to='/management'>Management</Link>
@@ -27,6 +29,7 @@ function App() {
           <Route path="/home" element={<HomePage />} />
           <Route path="/management" element={<Management />} />
           <Route path="/reservations" element={<MyReservations />} />
+          <Route path="/mystats" element={<MyStas />} />
           <Route path="/trip-planner" element={<TripPlannerPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
         </Routes>
