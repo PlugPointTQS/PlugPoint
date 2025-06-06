@@ -13,7 +13,7 @@ import tqs.plugpoint.backend.entities.Charger.ChargerStatus;
 
 @DataJpaTest
 @TestPropertySource(properties = {
-    "spring.datasource.url=jdbc:postgresql://localhost:5555/plugpoint",
+    "spring.datasource.url=jdbc:postgresql://deti-tqs-13.ua.pt:5555/plugpoint",
     "spring.datasource.username=postgres",
     "spring.datasource.password=postgres"
 })

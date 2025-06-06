@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './MyStats.css';
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 // Fatores aproximados de CO₂ poupado (kg CO₂ por kWh) dependendo do tipo de carregador.
 // Estes valores são meramente indicativos e podem ser ajustados conforme a fonte de energia.
@@ -37,7 +38,7 @@ export default function MyStats() {
   useEffect(() => {
     const fetchAllReservationDetails = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/reservations/user/${userId}`);
+        const res = await fetch(`${baseUrl}/reservations/user/${userId}`);
         const reservationsData = (await res.json()) || [];
         setReservations(reservationsData);
 
@@ -50,7 +51,7 @@ export default function MyStats() {
 
           const chargerId = reservation.chargerId;
           if (!chargerMapTemp[chargerId]) {
-            const chargerRes = await fetch(`http://localhost:8080/api/chargers/${chargerId}`);
+            const chargerRes = await fetch(`${baseUrl}/chargers/${chargerId}`);
             const charger = await chargerRes.json();
             chargerMapTemp[chargerId] = charger;
 

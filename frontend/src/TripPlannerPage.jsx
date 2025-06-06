@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './TripPlannerPage.css';
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const CITIES = [
   'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco', 'Coimbra', 'Evora', 'Faro',
@@ -59,12 +60,12 @@ export default function TripPlannerPage() {
   };
 
   const fetchStations = async () => {
-    const res = await fetch('http://localhost:8080/api/stations');
+    const res = await fetch(`${baseUrl}/stations`);
     return await res.json();
   };
 
   const fetchChargers = async (stationId) => {
-    const res = await fetch(`http://localhost:8080/api/chargers/station/${stationId}`);
+    const res = await fetch(`${baseUrl}/chargers/station/${stationId}`);
     return await res.json();
   };
 
@@ -83,7 +84,7 @@ export default function TripPlannerPage() {
     };
 
     try {
-      const res = await fetch('http://localhost:8080/api/reservations', {
+      const res = await fetch(`${baseUrl}/reservations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reservationData),
