@@ -1,0 +1,180 @@
+/* StationStatsPanel.css */
+.stats-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: min(800px, 90vw);
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 1000;
+    padding: 2rem;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .panel-header h2 {
+    margin: 0;
+    color: #2d3748;
+    font-size: 1.5rem;
+  }
+  
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #718096;
+    padding: 0.5rem;
+    line-height: 1;
+  }
+  
+  .close-btn:hover {
+    color: #2d3748;
+  }
+  
+  .date-range {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .date-input {
+    flex: 1;
+  }
+  
+  .date-input label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: #4a5568;
+  }
+  
+  .date-input input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+  }
+  
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .kpi-card {
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .kpi-value {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: #3182ce;
+    margin-bottom: 0.5rem;
+  }
+  
+  .kpi-label {
+    font-size: 0.875rem;
+    color: #718096;
+  }
+  
+  .chart-container {
+    margin-bottom: 2rem;
+  }
+  
+  .chart-container h3 {
+    margin: 0 0 1rem;
+    color: #2d3748;
+    font-size: 1.1rem;
+  }
+  
+  .panel-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .export-btn {
+    padding: 0.75rem 1.5rem;
+    background: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  
+  .export-btn:hover {
+    background: #2c5282;
+  }
+  
+  .loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3182ce;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .error-icon {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  .error-message {
+    color: #e53e3e;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .no-data {
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .no-data-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .no-data h3 {
+    margin: 0 0 0.5rem;
+    color: #2d3748;
+  }
+  
+  .no-data p {
+    margin: 0 0 1.5rem;
+    color: #718096;
+  }
+  
+  @media (max-width: 768px) {
+    .kpi-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .date-range {
+      flex-direction: column;
+    }
+  }

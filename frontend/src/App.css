@@ -4,9 +4,7 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow-y: auto; /* permite scroll vertical */
   font-family: 'Inter', sans-serif;
-  background-color: #f0f8ff;
 }
 
 /* --- APP CONTAINER GLOBAL --- */
@@ -16,81 +14,106 @@ body {
   flex-direction: column;
 }
 
-/* --- HOMEPAGE CONTENT WRAPPER --- */
-.homepage-container {
-  flex: 1;
-  display: flex;
-  width: 100%;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  margin: 1rem auto;
-}
-
 /* --- NAVBAR --- */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 50px;
+  height: 60px;
   background-color: #2e8b57;
   color: white;
-  padding: 0 1rem;
-}
-
-.navbar a {
-  color: white;
-  margin-left: 1rem;
-  text-decoration: none;
-}
-
-.navbar a:hover {
-  text-decoration: underline;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .navbar-title {
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* --- OPCIONAL: LOGO ANIMAÇÕES (default Vite) --- */
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.navbar-links {
+  display: flex;
+  gap: 1.5rem;
 }
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  position: relative;
 }
 
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.nav-link:hover {
+  opacity: 0.9;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: white;
+  transition: width 0.3s ease;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.nav-link:hover::after {
+  width: 100%;
 }
 
-/* --- UTILITÁRIOS E TEXTO --- */
+/* --- MAIN CONTENT AREA --- */
+.page-content {
+  flex: 1;
+  background-color: #f8fafc;
+}
+
+/* --- PAGE-SPECIFIC WRAPPERS --- */
+.home-page-wrapper,
+.admin-page-wrapper,
+.reservations-page-wrapper,
+.trip-planner-wrapper,
+.favorites-page-wrapper {
+  height: 100%;
+}
+
+/* Isolation of styles for each page */
+.home-page-wrapper {
+  isolation: isolate;
+}
+
+.admin-page-wrapper {
+  isolation: isolate;
+}
+
+.reservations-page-wrapper {
+  isolation: isolate;
+}
+
+.trip-planner-wrapper {
+  isolation: isolate;
+}
+
+.favorites-page-wrapper {
+  isolation: isolate;
+}
+
+/* --- UTILITY CLASSES --- */
 .card {
   padding: 2em;
 }
 
 .read-the-docs {
   color: #888;
+}
+
+/* Remove default Vite styles */
+.logo {
+  display: none;
 }
