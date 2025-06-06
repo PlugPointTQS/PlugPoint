@@ -9,6 +9,7 @@ import org.openqa.selenium.support.ui.*;
 import org.openqa.selenium.firefox.*;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.jupiter.api.Tag;
 
 import java.time.Duration;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Tag("e2e")
 public class ReservationTest {
 
     private WebDriver driver;
