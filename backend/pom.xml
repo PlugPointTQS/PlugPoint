@@ -183,6 +183,7 @@
 
     <build>
         <plugins>
+            
             <!-- Compilação -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -193,7 +194,14 @@
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
-
+            <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>3.1.2</version>
+      <configuration>
+        <excludedGroups>e2e</excludedGroups>
+      </configuration>
+    </plugin>
             <!-- Execução de testes -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

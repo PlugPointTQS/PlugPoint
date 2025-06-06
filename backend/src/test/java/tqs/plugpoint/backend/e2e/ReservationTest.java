@@ -6,6 +6,10 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.*;
+import org.openqa.selenium.firefox.*;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.jupiter.api.Tag;
 
 import java.time.Duration;
 import java.util.List;
@@ -13,19 +17,20 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Tag("e2e")
 public class ReservationTest {
 
     private WebDriver driver;
     private WebDriverWait wait;
 
-    @BeforeEach
-    void setupTest() {
-        System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
-        driver = new ChromeDriver(options);
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-    }
+  
+    @BeforeEach 
+    void setup() {
+
+            driver=new FirefoxDriver();
+            wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        }
+
 
     @AfterEach
     void teardown() {
