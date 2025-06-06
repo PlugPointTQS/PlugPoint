@@ -3,8 +3,6 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './AdminPage.css';
-import './MyReservations.css';
-import './HomePage.css';
 import StationStatsPanel from './components/StationStatsPanel';
 
 const chargerIcon = new L.Icon({
@@ -22,12 +20,8 @@ const AdminPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const mapRef = useRef(null);
   const statsMapRef = useRef(null);
-
   const [isAddStationModalOpen, setIsAddStationModalOpen] = useState(false);
   const [newStation, setNewStation] = useState({ name: '', address: '', latitude: '', longitude: '' });
-  const [newChargers, setNewChargers] = useState([]);
-  const [tempCharger, setTempCharger] = useState({ type: 'TYPE2', power: '', status: 'AVAILABLE' });
-
   const [showStats, setShowStats] = useState(false);
   const [statsStationId, setStatsStationId] = useState(null);
 
@@ -95,10 +89,11 @@ const AdminPage = () => {
 
   const renderStationDetails = () => {
     if (!selectedStation) return null;
-    const { name, address } = selectedStation;
-
+    const statusOptions = ['AVAILABLE', 'IN_USE', 'MAINTENANCE'];
+  
     const handleEditToggle = () => {
       if (isEditing) {
+        // Lógica para salvar as alterações
         chargers.forEach((charger) => {
           fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/${charger.id}`, {
             method: 'PUT',
@@ -113,233 +108,309 @@ const AdminPage = () => {
       }
       setIsEditing((prev) => !prev);
     };
-
-    const statusOptions = ['AVAILABLE', 'IN_USE', 'MAINTENANCE'];
-
+  
     return (
-      <>
+      <div className="station-details-modal">
         <div className="modal-backdrop" onClick={closeModal} />
-        <div style={{ position: 'fixed', top: '8%', left: '50%', transform: 'translateX(-50%)', zIndex: 999, width: 'min(500px, 92vw)' }}>
-          <div className="station-details" style={{ borderColor: '#1e90ff' }}>
-            <div className="address-directions-container">
-              <div className="station-address">
-                {isEditing ? (
-                  <>
-                    <input value={selectedStation.name} onChange={(e) => setSelectedStation((prev) => ({ ...prev, name: e.target.value }))} className="edit-input" autoFocus />
-                    <input value={selectedStation.address} onChange={(e) => setSelectedStation((prev) => ({ ...prev, address: e.target.value }))} className="edit-input" />
-                  </>
-                ) : (
-                  <>
-                    <h3>{name}</h3>
-                    <h3>{address}</h3>
-                  </>
-                )}
+        <div className="modal-content">
+          <div className="modal-header">
+            {isEditing ? (
+              <div className="edit-form-container">
+                <div className="edit-form-row">
+                  <div className="edit-form-group">
+                    <label>Nome da Estação</label>
+                    <input
+                      type="text"
+                      value={selectedStation.name}
+                      onChange={(e) => setSelectedStation((prev) => ({ ...prev, name: e.target.value }))}
+                      className="edit-form-input"
+                      autoFocus
+                    />
+                  </div>
+                </div>
+                <div className="edit-form-row">
+                  <div className="edit-form-group">
+                    <label>Endereço</label>
+                    <input
+                      type="text"
+                      value={selectedStation.address}
+                      onChange={(e) => setSelectedStation((prev) => ({ ...prev, address: e.target.value }))}
+                      className="edit-form-input"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div className="station-connections">
-              {isLoadingChargers ? (
-                <p>Loading chargers…</p>
-              ) : chargers.length > 0 ? (
-                chargers.map((charger, index) => (
-                  <div key={charger.id ?? index} className="connection-card">
-                    <div className="charger-info">
-                      <h4>Charger {index + 1}</h4>
-                      {isEditing ? (
-                        <>
-                          <input value={charger.type} className="edit-input" onChange={(e) => {
-                            const newChargers = [...chargers];
-                            newChargers[index] = { ...charger, type: e.target.value };
-                            setChargers(newChargers);
-                          }} />
-                          <input value={charger.power} className="edit-input" onChange={(e) => {
-                            const newChargers = [...chargers];
-                            newChargers[index] = { ...charger, power: e.target.value };
-                            setChargers(newChargers);
-                          }} />
-                          <div className="status-toggle">
-                            {statusOptions.map((status) => (
-                              <label key={status} className={`status-option ${getStatusClass(status)}`}>
-                                <input type="radio" name={`status-${index}`} value={status} checked={charger.status === status} onChange={() => {
-                                  const newChargers = [...chargers];
-                                  newChargers[index] = { ...charger, status };
-                                  setChargers(newChargers);
-                                }} />
-                                {status}
-                              </label>
-                            ))}
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <p><strong>Type:</strong> {charger.type}</p>
-                          <p><strong>Power:</strong> {charger.power} kW</p>
-                          <p className={`status ${getStatusClass(charger.status)}`}>{charger.status}</p>
-                        </>
+            ) : (
+              <>
+                <h3>{selectedStation.name}</h3>
+                <p>{selectedStation.address}</p>
+              </>
+            )}
+          </div>
+  
+          <div className="chargers-section">
+            <h4 className="edit-section-title">Carregadores</h4>
+            {isLoadingChargers ? (
+              <div className="loading-chargers">Carregando...</div>
+            ) : chargers.length > 0 ? (
+              <div className="chargers-grid">
+                {chargers.map((charger, index) => (
+                  <div key={charger.id ?? index} className="charger-edit-card">
+                    <div className="charger-edit-header">
+                      <h5 className="charger-edit-title">Carregador {index + 1}</h5>
+                      {isEditing && (
+                        <button className="delete-charger-btn">×</button>
                       )}
                     </div>
+                    {isEditing ? (
+                      <div className="charger-edit-form">
+                        <div className="edit-form-row">
+                          <div className="edit-form-group">
+                            <label>Tipo</label>
+                            <select
+                              value={charger.type}
+                              onChange={(e) => {
+                                const newChargers = [...chargers];
+                                newChargers[index] = { ...charger, type: e.target.value };
+                                setChargers(newChargers);
+                              }}
+                              className="edit-form-input"
+                            >
+                              <option value="TYPE2">TYPE2</option>
+                              <option value="CHADEMO">CHADEMO</option>
+                              <option value="CCS">CCS</option>
+                            </select>
+                          </div>
+                          <div className="edit-form-group">
+                            <label>Potência (kW)</label>
+                            <input
+                              type="number"
+                              value={charger.power}
+                              onChange={(e) => {
+                                const newChargers = [...chargers];
+                                newChargers[index] = { ...charger, power: e.target.value };
+                                setChargers(newChargers);
+                              }}
+                              className="edit-form-input"
+                            />
+                          </div>
+                        </div>
+                        <div className="edit-form-row">
+                          <div className="edit-form-group">
+                            {/* Substituir a seção de status options por este código */}
+                              <div className="status-options-container">
+                                <label>Status</label>
+                                <div className="status-options-grid">
+                                  {statusOptions.map((status) => (
+                                    <div key={status} className={`status-option ${getStatusClass(status)}`}>
+                                      <label>
+                                        <input
+                                          type="radio"
+                                          name={`status-${index}`}
+                                          value={status}
+                                          checked={charger.status === status}
+                                          onChange={() => {
+                                            const newChargers = [...chargers];
+                                            newChargers[index] = { ...charger, status };
+                                            setChargers(newChargers);
+                                          }}
+                                        />
+                                        <span className="status-option-visual">
+                                          {status === 'AVAILABLE' && 'Disponível'}
+                                          {status === 'IN_USE' && 'Em Uso'}
+                                          {status === 'MAINTENANCE' && 'Manutenção'}
+                                        </span>
+                                      </label>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="charger-info">
+                        <p><strong>Tipo:</strong> {charger.type}</p>
+                        <p><strong>Potência:</strong> {charger.power} kW</p>
+                        <p className={`status ${getStatusClass(charger.status)}`}>
+                          {charger.status === 'AVAILABLE' && 'Disponível'}
+                          {charger.status === 'IN_USE' && 'Em Uso'}
+                          {charger.status === 'MAINTENANCE' && 'Em Manutenção'}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                ))
-              ) : (
-                <p>No chargers available</p>
-              )}
-            </div>
-
-            <div className="station-footer" style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-              <p style={{ flex: 1 }}>🔌 {chargers.length} charger{chargers.length !== 1 ? 's' : ''} registered</p>
-              <button className="edit-button2" onClick={handleEditToggle}>{isEditing ? '✅ Confirmar' : '✏️ Editar'}</button>
-              <button className="cancel-button" onClick={closeModal}>Fechar</button>
-              <button className="edit-button2" onClick={() => { setStatsStationId(selectedStation.id); setShowStats(true); }}>📊 Estatísticas</button>
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="no-chargers">Nenhum carregador disponível</p>
+            )}
+          </div>
+  
+          <div className="modal-footer-edit">
+            <button className="edit-btn" onClick={handleEditToggle}>
+              {isEditing ? '✅ Salvar Alterações' : '✏️ Editar Estação'}
+            </button>
+            <button className="close-btn" onClick={closeModal}>Fechar</button>
           </div>
         </div>
-      </>
+      </div>
     );
   };
 
   return (
     <div className="admin-page">
       <div className="admin-sidebar">
-        <h2 className="admin-title">Administração</h2>
+        <h2 className="admin-title">
+          <i className="icon-admin"></i> Administração
+        </h2>
         <ul className="admin-nav">
-          <li className={activeTab === 'stations' ? 'active' : ''} onClick={() => setActiveTab('stations')}>Gerir Estações</li>
-          <li className={activeTab === 'stats' ? 'active' : ''} onClick={() => setActiveTab('stats')}>Estatísticas</li>
-          <li className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>Utilizadores</li>
+          <li 
+            className={activeTab === 'stations' ? 'active' : ''} 
+            onClick={() => setActiveTab('stations')}
+          >
+            <i className="icon-stations"></i> Gerir Estações
+          </li>
+          
+          <li 
+            className={activeTab === 'users' ? 'active' : ''} 
+            onClick={() => setActiveTab('users')}
+          >
+            <i className="icon-users"></i> Utilizadores
+          </li>
         </ul>
       </div>
 
       <div className="admin-content">
         {activeTab === 'stations' && (
-          <div className="admin-section admin-grid">
-            <button className="edit-button2" onClick={() => setIsAddStationModalOpen(true)}>➕ Nova Estação</button>
-            {isAddStationModalOpen && (
-              <>
-                <div className="modal-backdrop" onClick={() => setIsAddStationModalOpen(false)} />
-                <div className="edit-modal">
-                  <h3>Nova Estação</h3>
-
-                  <input placeholder="Nome" value={newStation.name} onChange={(e) => setNewStation({ ...newStation, name: e.target.value })} />
-                  <input placeholder="Morada" value={newStation.address} onChange={(e) => setNewStation({ ...newStation, address: e.target.value })} />
-                  <input placeholder="Latitude" value={newStation.latitude} onChange={(e) => setNewStation({ ...newStation, latitude: e.target.value })} />
-                  <input placeholder="Longitude" value={newStation.longitude} onChange={(e) => setNewStation({ ...newStation, longitude: e.target.value })} />
-
-                  <h4>Adicionar Charger</h4>
-                  <input placeholder="Potência" value={tempCharger.power} onChange={(e) => setTempCharger({ ...tempCharger, power: e.target.value })} />
-                  <select value={tempCharger.type} onChange={(e) => setTempCharger({ ...tempCharger, type: e.target.value })}>
-                    <option value="TYPE2">TYPE2</option>
-                    <option value="CHADEMO">CHADEMO</option>
-                    <option value="CCS">CCS</option>
-                    <option value="TESLA">TESLA</option>
-                    <option value="AC">AC</option>
-                    <option value="DC">DC</option>
-                  </select>
-                  <select value={tempCharger.status} onChange={(e) => setTempCharger({ ...tempCharger, status: e.target.value })}>
-                    <option value="AVAILABLE">AVAILABLE</option>
-                    <option value="IN_USE">IN_USE</option>
-                    <option value="MAINTENANCE">MAINTENANCE</option>
-                  </select>
-                  <button className="edit-button" onClick={() => {
-                    setNewChargers([...newChargers, tempCharger]);
-                    setTempCharger({ type: 'TYPE2', power: '', status: 'AVAILABLE' });
-                  }}>Adicionar Charger</button>
-
-                  <ul style={{ marginTop: '1rem' }}>
-                    {newChargers.map((ch, i) => (
-                      <li key={i}>
-                        🔌 {ch.type} - {ch.power} kW - {ch.status}
-                        <button
-                          className="delete-charger-btn"
-                          onClick={() => {
-                            setNewChargers(newChargers.filter((_, index) => index !== i));
-                          }}
-                        >
-                          ❌
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="modal-actions">
-                    <button onClick={() => {
-                      // 1. Criar estação
-                      fetch('http://deti-tqs-13.ua.pt:8080/api/stations', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newStation),
-                      })
-                        .then(res => res.json())
-                        .then(createdStation => {
-                          // 2. Criar carregadores associados
-                          newChargers.forEach(ch => {
-                            fetch('http://deti-tqs-13.ua.pt:8080/api/chargers', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ ...ch, stationId: createdStation.id }),
-                            });
-                          });
-                          // Reset
-                          setIsAddStationModalOpen(false);
-                          setNewStation({ name: '', address: '', latitude: '', longitude: '' });
-                          setNewChargers([]);
-                          // Recarrega estações
-                          fetch('http://deti-tqs-13.ua.pt:8080/api/stations')
-                            .then((res) => res.json())
-                            .then((data) => setStations(data));
-                        });
-                    }}>✅ Criar Estação</button>
-
-                    <button className="cancel-button" onClick={() => setIsAddStationModalOpen(false)}>Cancelar</button>
-                  </div>
-                </div>
-              </>
-            )}
-
-            <div className="map-column">
+          <div className="stations-view">
+            <div className="map-container">
               <MapContainer
                 center={[39.5, -8.0]}
                 zoom={7}
                 scrollWheelZoom
-                className="map-view"
+                className="admin-map"
                 whenCreated={(m) => (mapRef.current = m)}
               >
-                <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <TileLayer 
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' 
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+                />
                 {stations.map((s) => (
-                  <Marker key={s.id} position={[s.latitude, s.longitude]} icon={chargerIcon} eventHandlers={{ click: () => handleFlyTo(s) }} />
+                  <Marker 
+                    key={s.id} 
+                    position={[s.latitude, s.longitude]} 
+                    icon={chargerIcon} 
+                    eventHandlers={{ click: () => handleFlyTo(s) }}
+                  />
                 ))}
               </MapContainer>
+            </div>
+            
+            <div className="stations-list">
+              <div className="list-header">
+                <h3>Estações ({stations.length})</h3>
+                <button 
+                  className="add-station-btn"
+                  onClick={() => setIsAddStationModalOpen(true)}
+                >
+                  <i className="icon-plus"></i> Nova Estação
+                </button>
+              </div>
+              
+              <div className="stations-scroll">
+                {stations.map(station => (
+                  <div 
+                    key={station.id} 
+                    className={`station-card ${selectedStation?.id === station.id ? 'active' : ''}`}
+                    onClick={() => handleFlyTo(station)}
+                  >
+                    <div className="station-info">
+                      <h4>{station.name}</h4>
+                      <p>{station.address}</p>
+                    </div>
+                    <div className="station-actions">
+                      <button 
+                        className="stats-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectStationForStats(station);
+                        }}
+                      >
+                        <i className="icon-stats"></i>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {activeTab === 'stats' && (
-          <div className="admin-section admin-grid">
-            <div className="map-column">
-              <MapContainer
-                center={[39.5, -8.0]}
-                zoom={7}
-                scrollWheelZoom
-                className="map-view"
-                whenCreated={(m) => (statsMapRef.current = m)}
-              >
-                <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                {stations.map((s) => (
-                  <Marker key={s.id} position={[s.latitude, s.longitude]} icon={chargerIcon} eventHandlers={{ click: () => handleSelectStationForStats(s) }} />
-                ))}
-              </MapContainer>
-            </div>
-            {!showStats && (
-              <div className="placeholder">
-                <h3>Seleciona uma estação no mapa para ver estatísticas.</h3>
-              </div>
-            )}
-          </div>
-        )}
+        
       </div>
 
       {selectedStation && renderStationDetails()}
 
       {showStats && (
-        <StationStatsPanel stationId={statsStationId} onClose={() => setShowStats(false)} />
+        <StationStatsPanel 
+          stationId={statsStationId} 
+          onClose={() => setShowStats(false)} 
+        />
+      )}
+
+      {isAddStationModalOpen && (
+        <div className="add-station-modal">
+          <div className="modal-backdrop" onClick={() => setIsAddStationModalOpen(false)} />
+          <div className="modal-content">
+            <h3>Adicionar Nova Estação</h3>
+            <div className="form-group">
+              <label>Nome</label>
+              <input 
+                type="text" 
+                value={newStation.name}
+                onChange={(e) => setNewStation({...newStation, name: e.target.value})}
+              />
+            </div>
+            <div className="form-group">
+              <label>Endereço</label>
+              <input 
+                type="text" 
+                value={newStation.address}
+                onChange={(e) => setNewStation({...newStation, address: e.target.value})}
+              />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Latitude</label>
+                <input 
+                  type="number" 
+                  value={newStation.latitude}
+                  onChange={(e) => setNewStation({...newStation, latitude: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label>Longitude</label>
+                <input 
+                  type="number" 
+                  value={newStation.longitude}
+                  onChange={(e) => setNewStation({...newStation, longitude: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="cancel-btn" onClick={() => setIsAddStationModalOpen(false)}>
+                Cancelar
+              </button>
+              <button className="confirm-btn" onClick={() => {
+                // Implementar lógica para adicionar nova estação
+                setIsAddStationModalOpen(false);
+              }}>
+                Adicionar Estação
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

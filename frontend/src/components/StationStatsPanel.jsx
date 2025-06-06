@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatISO, subDays, format } from 'date-fns';
+import './StationStatsPanel.css'; // Import your CSS styles
 
 const StationStatsPanel = ({ stationId, onClose }) => {
   const [range, setRange] = useState({
@@ -57,40 +58,30 @@ const StationStatsPanel = ({ stationId, onClose }) => {
     URL.revokeObjectURL(url);
   };
 
-  if (loading) return <div className="stats-panel"><p>Carregando…</p></div>;
-  if (error) return <div className="stats-panel"><p className="error">{error}</p></div>;
+  if (loading) return (
+    <div className="stats-panel">
+      <div className="loading-spinner"></div>
+      <p>Carregando...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="stats-panel">
+      <div className="error-icon">⚠️</div>
+      <p className="error-message">{error}</p>
+      <button onClick={onClose} className="close-btn">
+        Fechar
+      </button>
+    </div>
+  );
+
   if (!stats || stats.sessions === 0) {
     return (
-      <div className="stats-panel" style={{
-        background: '#13293d',
-        color: '#e6f4ff',
-        border: '2px solid #1e90ff',
-        borderRadius: '12px',
-        padding: '2rem',
-        maxWidth: '500px',
-        margin: '0 auto',
-        position: 'fixed',
-        top: '10%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        boxShadow: '0 0 20px rgba(0,0,0,0.4)',
-        zIndex: 9999,
-        textAlign: 'center'
-      }}>
-        <h2 style={{ fontSize: '1.3rem', marginBottom: '1rem' }}>📉 Sem dados</h2>
-        <p style={{ fontSize: '1.1rem', opacity: 0.85 }}>
-          Não foram encontrados dados para o período escolhido.
-        </p>
-        <button onClick={onClose} style={{
-          marginTop: '1.5rem',
-          background: '#e53e3e',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '6px',
-          padding: '0.6rem 1.2rem',
-          cursor: 'pointer',
-          fontWeight: 'bold'
-        }}>
+      <div className="stats-panel no-data">
+        <div className="no-data-icon">📉</div>
+        <h3>Sem dados</h3>
+        <p>Não foram encontrados dados para o período escolhido.</p>
+        <button onClick={onClose} className="close-btn">
           Fechar
         </button>
       </div>
@@ -98,107 +89,73 @@ const StationStatsPanel = ({ stationId, onClose }) => {
   }
 
   return (
-    <div className="stats-panel" style={panelStyle}>
-      <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>📊 Estatísticas</h2>
-
-      <div style={dateRowStyle}>
-        <label>De:&nbsp;
-          <input type="datetime-local"
-                 value={range.from.slice(0, 16)}
-                 onChange={e => setRange(r => ({ ...r, from: e.target.value }))}
-                 style={inputStyle} />
-        </label>
-        <label>Até:&nbsp;
-          <input type="datetime-local"
-                 value={range.to.slice(0, 16)}
-                 onChange={e => setRange(r => ({ ...r, to: e.target.value }))}
-                 style={inputStyle} />
-        </label>
+    <div className="stats-panel">
+      <div className="panel-header">
+        <h2>Estatísticas da Estação</h2>
+        <button onClick={onClose} className="close-btn">
+          ×
+        </button>
       </div>
 
-      <div style={kpiRowStyle}>
-        <div><span style={valueStyle}>{stats.energyDeliveredKWh.toFixed(1)}</span><br />kWh</div>
-        <div><span style={valueStyle}>{stats.sessions}</span><br />sessões</div>
-        <div><span style={valueStyle}>{stats.averageOccupancyPct.toFixed(1)}%</span><br />ocupação</div>
+      <div className="date-range">
+        <div className="date-input">
+          <label>De:</label>
+          <input
+            type="datetime-local"
+            value={range.from.slice(0, 16)}
+            onChange={e => setRange(r => ({ ...r, from: e.target.value }))}
+          />
+        </div>
+        <div className="date-input">
+          <label>Até:</label>
+          <input
+            type="datetime-local"
+            value={range.to.slice(0, 16)}
+            onChange={e => setRange(r => ({ ...r, to: e.target.value }))}
+          />
+        </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={220}>
-        <AreaChart data={dailyEnergyData}>
-          <XAxis dataKey="date" />
-          <YAxis />
-          <Tooltip />
-          <Area type="monotone" dataKey="energyKWh" stroke="#4a90e2" fill="#4a90e244" strokeWidth={2} />
-        </AreaChart>
-      </ResponsiveContainer>
+      <div className="kpi-grid">
+        <div className="kpi-card">
+          <div className="kpi-value">{stats.energyDeliveredKWh.toFixed(1)}</div>
+          <div className="kpi-label">kWh Entregues</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-value">{stats.sessions}</div>
+          <div className="kpi-label">Sessões</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-value">{stats.averageOccupancyPct.toFixed(1)}%</div>
+          <div className="kpi-label">Ocupação Média</div>
+        </div>
+      </div>
 
-      <div style={footerStyle}>
-        <button onClick={handleExport} style={buttonStyle}>Exportar CSV</button>
-        <button onClick={onClose} style={{ ...buttonStyle, background: '#e53e3e' }}>Fechar</button>
+      <div className="chart-container">
+        <h3>Energia Entregue por Dia (kWh)</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={dailyEnergyData}>
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Area 
+              type="monotone" 
+              dataKey="energyKWh" 
+              stroke="#3182ce" 
+              fill="#3182ce33" 
+              strokeWidth={2} 
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+
+      <div className="panel-footer">
+        <button onClick={handleExport} className="export-btn">
+          Exportar CSV
+        </button>
       </div>
     </div>
   );
-};
-
-const panelStyle = {
-  background: '#13293d',
-  color: '#e6f4ff',
-  border: '2px solid #1e90ff',
-  borderRadius: '12px',
-  padding: '1.5rem',
-  maxWidth: '620px',
-  margin: '0 auto',
-  position: 'fixed',
-  top: '10%',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  boxShadow: '0 0 20px rgba(0,0,0,0.4)',
-  zIndex: 9999
-};
-
-const dateRowStyle = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  gap: '1rem',
-  marginBottom: '1rem'
-};
-
-const inputStyle = {
-  background: '#1c3a57',
-  color: 'white',
-  border: '1px solid #4a90e2',
-  borderRadius: 6,
-  padding: '0.3rem',
-  fontSize: '0.95rem'
-};
-
-const kpiRowStyle = {
-  display: 'flex',
-  justifyContent: 'space-around',
-  marginBottom: '1.2rem',
-  textAlign: 'center'
-};
-
-const valueStyle = {
-  fontSize: '1.6rem',
-  fontWeight: 'bold',
-  color: '#ffffff'
-};
-
-const footerStyle = {
-  display: 'flex',
-  justifyContent: 'flex-end',
-  gap: '1rem',
-  marginTop: '1rem'
-};
-
-const buttonStyle = {
-  background: '#1e90ff',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '6px',
-  padding: '0.6rem 1.2rem',
-  cursor: 'pointer',
-  fontWeight: 'bold'
 };
 
 export default StationStatsPanel;

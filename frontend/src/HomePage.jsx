@@ -9,6 +9,7 @@ const chargerIcon = new L.Icon({
   iconSize: [40, 40],
   iconAnchor: [20, 40],
 });
+
 const getLocIcon = new L.Icon({
   iconUrl: '/newcheckpoint.png',
   iconSize: [70, 70],
@@ -171,174 +172,226 @@ export default function HomePage() {
   };
 
   return (
-    <div className="container">
-      <div className="map">
-        <MapContainer center={[39.5, -8]} zoom={7} ref={mapRef} className="leaflet">
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+    <div className="home-container">
+      <div className="map-section">
+        <MapContainer center={[39.5, -8]} zoom={7} ref={mapRef} className="map-view">
+          <TileLayer 
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+          />
           {displayed.map(s => (
-            <Marker key={s.id} position={[s.latitude, s.longitude]} icon={chargerIcon}
-              eventHandlers={{ click: () => openDetails(s) }} />
+            <Marker 
+              key={s.id} 
+              position={[s.latitude, s.longitude]} 
+              icon={chargerIcon}
+              eventHandlers={{ click: () => openDetails(s) }}
+            />
           ))}
           {userLoc && (
-            <Marker position={[userLoc.lat, userLoc.lng]} icon={getLocIcon} zIndexOffset={1000}>
+            <Marker position={[userLoc.lat, userLoc.lng]} icon={getLocIcon}>
               <Popup>{locLabel || 'Localização'}</Popup>
             </Marker>
           )}
         </MapContainer>
       </div>
 
-      <aside className="panel">
-        <div className="searchCard">
-          <div className="searchWrapper">
-            <input
-              value={search}
-              onChange={e => onSearchChange(e.target.value)}
-              onFocus={() => setShowDD(true)}
-              placeholder="📍 Origem"
-              className="searchInput"
-            />
+      <div className="panel-section">
+        <div className="search-card">
+          <div className="search-container">
+            <div className="search-input-wrapper">
+              <i className="icon-search"></i>
+              <input
+                value={search}
+                onChange={e => onSearchChange(e.target.value)}
+                onFocus={() => setShowDD(true)}
+                placeholder="Pesquisar localização..."
+                className="search-input"
+              />
+            </div>
+            
             {showDD && (
-              <div className="dropdown">
-                <p className="section">LOCALIZAÇÃO ATUAL</p>
-                <div className="opt" onClick={useMyLocation}>📍 Localização Atual</div>
+              <div className="dropdown-menu">
+                <div className="dropdown-section">
+                  <h4>Localização Atual</h4>
+                  <div className="dropdown-item" onClick={useMyLocation}>
+                    <i className="icon-location"></i> Usar minha localização
+                  </div>
+                </div>
+                
                 {recent.length > 0 && (
-                  <>
-                    <p className="section">PESQUISAS RECENTES</p>
+                  <div className="dropdown-section">
+                    <h4>Recentes</h4>
                     {recent.map((c, i) => (
-                      <div key={`recent-${i}`} className="opt" onClick={() => selectCity(c)}>{c}</div>
+                      <div key={`recent-${i}`} className="dropdown-item" onClick={() => selectCity(c)}>
+                        <i className="icon-clock"></i> {c}
+                      </div>
                     ))}
-                  </>
+                  </div>
                 )}
+                
                 {suggestions.length > 0 && (
-                  <>
-                    <p className="section">CIDADES</p>
+                  <div className="dropdown-section">
+                    <h4>Cidades</h4>
                     {suggestions.map((c, i) => (
-                      <div key={`sug-${i}`} className="opt" onClick={() => selectCity(c)}>{c}</div>
+                      <div key={`sug-${i}`} className="dropdown-item" onClick={() => selectCity(c)}>
+                        <i className="icon-city"></i> {c}
+                      </div>
                     ))}
-                  </>
+                  </div>
                 )}
               </div>
             )}
           </div>
 
           {locLabel && (
-            <p className="info-active-location">
-              📍 A mostrar resultados de: <strong>{locLabel}</strong>
-            </p>
+            <div className="location-label">
+              <i className="icon-pin"></i>
+              <span>Mostrando resultados próximos de <strong>{locLabel}</strong></span>
+            </div>
           )}
 
-          <div className="filters-modern">
-            <label className="filter-label">Tipo de Carregador</label>
-            <select
-              className="filter-select"
-              value={typeFilter}
-              onChange={e => setTypeFilter(e.target.value)}
+          <div className="filters-container">
+            <h4 className="filters-title">Filtros</h4>
+            
+            <div className="filter-group">
+              <label>Tipo de Carregador</label>
+              <select
+                value={typeFilter}
+                onChange={e => setTypeFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="">Todos</option>
+                <option value="TYPE2">TYPE2</option>
+                <option value="CHADEMO">CHADEMO</option>
+                <option value="CCS">CCS</option>
+                <option value="TESLA">TESLA</option>
+                <option value="AC">AC</option>
+                <option value="DC">DC</option>
+              </select>
+            </div>
+            
+            <div className="filter-group">
+              <label>Potência Mínima: <span>{powerValue} kW</span></label>
+              <input
+                type="range"
+                min="0"
+                max="250"
+                value={powerValue}
+                onChange={e => setPowerValue(+e.target.value)}
+                className="filter-slider"
+              />
+            </div>
+            
+            <div className="filter-group">
+              <label>Distância Máxima: <span>{distanceValue} km</span></label>
+              <input
+                type="range"
+                min="0"
+                max="250"
+                value={distanceValue}
+                onChange={e => setDistanceValue(+e.target.value)}
+                className="filter-slider"
+              />
+            </div>
+            
+            <button 
+              className="clear-filters-btn"
+              onClick={() => {
+                setTypeFilter('');
+                setPowerValue(250);
+                setDistanceValue(250);
+              }}
             >
-              <option value="">Todos</option>
-              <option value="TYPE2">TYPE2</option>
-              <option value="CHADEMO">CHADEMO</option>
-              <option value="CCS">CCS</option>
-              <option value="TESLA">TESLA</option>
-              <option value="AC">AC</option>
-              <option value="DC">DC</option>
-            </select>
-
-            <label className="filter-label">
-              Potência: <strong>{powerValue} kW</strong>
-            </label>
-            <input
-              type="range"
-              className="filter-slider"
-              min="0"
-              max="250"
-              value={powerValue}
-              onChange={e => setPowerValue(+e.target.value)}
-            />
-
-            <label className="filter-label">
-              Distância: <strong>{distanceValue} km</strong>
-            </label>
-            <input
-              type="range"
-              className="filter-slider"
-              min="0"
-              max="250"
-              value={distanceValue}
-              onChange={e => setDistanceValue(+e.target.value)}
-            />
-
-            <button className="clear" onClick={() => {
-              setTypeFilter('');
-              setPowerValue(250);
-              setDistanceValue(250);
-            }}>Limpar filtros</button>
+              Limpar Filtros
+            </button>
           </div>
         </div>
 
         {selected ? (
-          <div className="station-details">
+          <div className="station-details-card">
             <div className="station-header">
               <div>
-                <h3 className="station-name">{selected.name}</h3>
-                <h3 className="station-address">{selected.address}</h3>
+                <h3>{selected.name}</h3>
+                <p className="station-address">{selected.address}</p>
               </div>
-              <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${selected.latitude},${selected.longitude}`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button 
+                className="favorite-btn"
+                onClick={() => toggleFavorite(selected.id)}
               >
-                <img src="/getLoc.png" alt="Ver no Google Maps" className="station-map-icon" />
-              </a>
+                <i className={favorites.includes(selected.id) ? "icon-heart-filled" : "icon-heart"}></i>
+              </button>
             </div>
-
+            
             <div className="chargers-list">
+              <h4>Carregadores Disponíveis</h4>
               {(stationChargers[selected.id] || []).map((c, i) => (
                 <div key={i} className="charger-card">
-                  <div>
-                    <strong>Charger {i + 1}</strong>
-                    <p>Type: {c.type}</p>
-                    <p>Power: {c.power} kW</p>
-                    <p className={c.status === 'AVAILABLE' ? 'available' : 'unavailable'}>{c.status}</p>
+                  <div className="charger-info">
+                    <div className="charger-type">
+                      <i className="icon-charger"></i>
+                      <span>Carregador {i+1}</span>
+                    </div>
+                    <div className="charger-specs">
+                      <span><strong>Tipo:</strong> {c.type}</span>
+                      <span><strong>Potência:</strong> {c.power} kW</span>
+                    </div>
+                    <span className={`status ${c.status === 'AVAILABLE' ? 'available' : 'unavailable'}`}>
+                      {c.status === 'AVAILABLE' ? 'Disponível' : 'Indisponível'}
+                    </span>
                   </div>
-                  <button className="reserve-btn" onClick={() => createReservation(c.id, selected.name, selected.address, i)}>
+                  <button 
+                    className="reserve-btn"
+                    onClick={() => createReservation(c.id, selected.name, selected.address, i)}
+                    disabled={c.status !== 'AVAILABLE'}
+                  >
                     Reservar
                   </button>
                 </div>
               ))}
-              <p className="chargers-count">
-                {(stationChargers[selected.id] || []).length} chargers available
-              </p>
             </div>
-
-            <div className="station-footer">
-              <button className="fav-btn" onClick={() => toggleFavorite(selected.id)}>
-                <img
-                  src={favorites.includes(selected.id) ? "public/heart-icon.png" : "public/heart-outline.png"}
-                  className="heart-icon"
-                />
-                <span>{favorites.includes(selected.id) ? "Remover dos favoritos" : "Adicionar aos favoritos"}</span>
-              </button>
-            </div>
-
-            <button onClick={() => setSelected(null)} className="backBtn">← Voltar</button>
+            
+            <button 
+              className="back-btn"
+              onClick={() => setSelected(null)}
+            >
+              <i className="icon-arrow-left"></i> Voltar à lista
+            </button>
           </div>
         ) : (
-          <ul className="list">
+          <div className="stations-list">
             {displayed.length === 0 ? (
-              <p style={{ padding: '1rem' }}>⚠️ Nenhuma estação corresponde aos filtros.</p>
+              <div className="empty-state">
+                <i className="icon-warning"></i>
+                <p>Nenhuma estação corresponde aos filtros aplicados</p>
+              </div>
             ) : (
               displayed.map(s => (
-                <li key={s.id} onClick={() => openDetails(s)}>
-                  <h4>{s.name}</h4>
-                  <p>{s.address}</p>
-                  {s.distance && <span>{s.distance.toFixed(1)} km</span>}
-                  <button>Detalhes</button>
-                </li>
+                <div 
+                  key={s.id} 
+                  className="station-card"
+                  onClick={() => openDetails(s)}
+                >
+                  <div className="station-info">
+                    <h4>{s.name}</h4>
+                    <p>{s.address}</p>
+                    {s.distance && (
+                      <div className="distance-badge">
+                        <i className="icon-distance"></i>
+                        {s.distance.toFixed(1)} km
+                      </div>
+                    )}
+                  </div>
+                  <div className="station-actions">
+                    <button className="details-btn">
+                      Ver detalhes <i className="icon-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
               ))
             )}
-          </ul>
+          </div>
         )}
-      </aside>
+      </div>
     </div>
   );
 }
