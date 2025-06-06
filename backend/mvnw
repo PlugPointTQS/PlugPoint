@@ -83,7 +83,7 @@ hash_string() {
   str="${1:-}" h=0
   while [ -n "$str" ]; do
     char="${str%"${str#?}"}"
-    h=$(((h * 31 + $(LC_CTYPE=C printf %d "'$char")) % 4294967296))
+    h=$(((h * 31 + $(LC_CTYPE=C printf %d "`$char")) % 4294967296))
     str="${str#?}"
   done
   printf %x\\n $h
@@ -154,7 +154,7 @@ fi
 
 case "${distributionUrl-}" in
 *?-bin.zip | *?maven-mvnd-?*-?*.zip) ;;
-*) die "distributionUrl is not valid, must match *-bin.zip or maven-mvnd-*.zip, but found '${distributionUrl-}'" ;;
+*) die "distributionUrl is not valid, must match *-bin.zip or maven-mvnd-*.zip, but found `${distributionUrl-}'" ;;
 esac
 
 # prepare tmp dir

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './FavoritesPage.css';
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
 
 export default function FavoritesPage() {
   const [stations, setStations] = useState([]);
@@ -9,7 +11,7 @@ export default function FavoritesPage() {
   });
 
   useEffect(() => {
-    fetch('http://deti-tqs-13.ua.pt:8080/api/stations')
+    fetch(`${baseUrl}/stations`)
       .then(res => res.json())
       .then(data => setStations(data));
   }, []);

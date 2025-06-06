@@ -4,6 +4,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './AdminPage.css';
 import StationStatsPanel from './components/StationStatsPanel';
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
 
 const chargerIcon = new L.Icon({
   iconUrl: '/battery-charging.png',
@@ -24,9 +26,8 @@ const AdminPage = () => {
   const [newStation, setNewStation] = useState({ name: '', address: '', latitude: '', longitude: '' });
   const [showStats, setShowStats] = useState(false);
   const [statsStationId, setStatsStationId] = useState(null);
-
   useEffect(() => {
-    fetch('http://deti-tqs-13.ua.pt:8080/api/stations')
+    fetch(`${baseUrl}/stations`)
       .then((res) => res.json())
       .then((data) => setStations(data))
       .catch((err) => console.error('Erro ao carregar estações:', err));
@@ -41,7 +42,7 @@ const AdminPage = () => {
     }
 
     try {
-      const res = await fetch(`http://deti-tqs-13.ua.pt:8080/api/stations/${station.id}`);
+      const res = await fetch(`${baseUrl}/stations/${station.id}`);
       const fullStation = res.ok ? await res.json() : station;
       setSelectedStation(fullStation);
     } catch (err) {
@@ -51,7 +52,7 @@ const AdminPage = () => {
 
     try {
       setIsLoadingChargers(true);
-      const chargersRes = await fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/station/${station.id}`);
+      const chargersRes = await fetch(`${baseUrl}/chargers/station/${station.id}`);
       if (!chargersRes.ok) throw new Error('Falha carregar carregadores');
       const chargersData = await chargersRes.json();
       setChargers(chargersData);
@@ -95,7 +96,7 @@ const AdminPage = () => {
       if (isEditing) {
         // Lógica para salvar as alterações
         chargers.forEach((charger) => {
-          fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/${charger.id}`, {
+          fetch(`${baseUrl}/chargers/${charger.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(charger),

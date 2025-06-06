@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './HomePage.css';
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const chargerIcon = new L.Icon({
   iconUrl: '/battery-charging.png',
@@ -59,13 +60,13 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    fetch('http://deti-tqs-13.ua.pt:8080/api/stations')
+    fetch(`${baseUrl}/stations`)
       .then(r => r.json())
       .then(async data => {
         setStations(data);
         const pairs = await Promise.all(
           data.map(async s => {
-            const r = await fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/station/${s.id}`);
+            const r = await fetch(`${baseUrl}/chargers/station/${s.id}`);
             const ch = await r.json();
             return [s.id, ch];
           })
@@ -145,7 +146,7 @@ export default function HomePage() {
     };
 
     try {
-      const response = await fetch('http://deti-tqs-13.ua.pt:8080/api/reservations', {
+      const response = await fetch(`${baseUrl}/reservations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reservationData),
@@ -164,7 +165,7 @@ export default function HomePage() {
 
   const openDetails = async s => {
     if (!stationChargers[s.id]) {
-      const r = await fetch(`http://deti-tqs-13.ua.pt:8080/api/chargers/station/${s.id}`);
+      const r = await fetch(`${baseUrl}/chargers/station/${s.id}`);
       const ch = await r.json();
       setStationChargers(prev => ({ ...prev, [s.id]: ch }));
     }
