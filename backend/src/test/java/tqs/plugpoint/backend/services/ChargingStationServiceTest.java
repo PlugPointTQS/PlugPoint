@@ -1,105 +1,156 @@
 package tqs.plugpoint.backend.services;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import static org.mockito.Mockito.when;
-import org.mockito.MockitoAnnotations;
-
+import org.mockito.*;
 import tqs.plugpoint.backend.dto.StationAvailabilityDTO;
+import tqs.plugpoint.backend.dto.StationStatsDTO;
 import tqs.plugpoint.backend.entities.Charger;
+import tqs.plugpoint.backend.entities.Charger.ChargerStatus;
 import tqs.plugpoint.backend.entities.ChargingStation;
-import tqs.plugpoint.backend.entities.ChargingStation.Status;
+import tqs.plugpoint.backend.entities.Reservation;
 import tqs.plugpoint.backend.repositories.ChargerRepository;
 import tqs.plugpoint.backend.repositories.ChargingStationRepository;
+import tqs.plugpoint.backend.repositories.ReservationRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+
+import java.time.LocalDateTime;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class ChargingStationServiceTest {
 
     @Mock
-    private ChargingStationRepository repository;
+    private ChargingStationRepository stationRepository;
 
-    @Mock  
+    @Mock
     private ChargerRepository chargerRepository;
 
-    @InjectMocks
-    private ChargingStationService service;
+    @Mock
+    private ReservationRepository reservationRepository;
 
-    private ChargingStation aveiroStation;
-    private ChargingStation lisboaStation;
+    @InjectMocks
+    private ChargingStationService stationService;
+
+    private ChargingStation station;
+    private Charger charger;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        aveiroStation = ChargingStation.builder()
+        station = ChargingStation.builder()
                 .id(1L)
-                .name("Aveiro EV")
-                .latitude(40.6405)
-                .longitude(-8.6538)
-                .address("Aveiro")
-                .operatorId(1L)
-                .status(Status.ACTIVE)
-                .createdAt(LocalDateTime.now())
+                .name("Station A")
+                .latitude(38.7369)
+                .longitude(-9.1427)
                 .build();
 
-        lisboaStation = ChargingStation.builder()
-                .id(2L)
-                .name("Lisboa EV")
-                .latitude(38.7169)
-                .longitude(-9.1399)
-                .address("Lisboa")
-                .operatorId(2L)
-                .status(Status.ACTIVE)
-                .createdAt(LocalDateTime.now())
+        charger = Charger.builder()
+                .id(1L)
+                .stationId(1L)
+                .power(22.0)
+                .status(ChargerStatus.AVAILABLE)
                 .build();
     }
 
     @Test
-    void testGetStationsNearby_withinRadius() {
-        when(repository.findAll()).thenReturn(List.of(aveiroStation, lisboaStation));
-
-        double userLat = 40.64;
-        double userLng = -8.65;
-        double radiusKm = 5.0;
-
-        List<ChargingStation> nearby = service.getStationsNearby(userLat, userLng, radiusKm);
-
-        assertThat(nearby).contains(aveiroStation).doesNotContain(lisboaStation);
+    void getAllStations_shouldReturnAllStations() {
+        when(stationRepository.findAll()).thenReturn(List.of(station));
+        List<ChargingStation> result = stationService.getAllStations();
+        assertEquals(1, result.size());
+        verify(stationRepository).findAll();
     }
 
     @Test
-    void testGetStationsNearby_noStationsFound() {
-        when(repository.findAll()).thenReturn(List.of(aveiroStation, lisboaStation));
-
-        double userLat = 41.0;
-        double userLng = -8.0;
-        double radiusKm = 1.0;
-
-        List<ChargingStation> nearby = service.getStationsNearby(userLat, userLng, radiusKm);
-
-        assertThat(nearby).isEmpty();
+    void getById_shouldReturnStationIfExists() {
+        when(stationRepository.findById(1L)).thenReturn(Optional.of(station));
+        Optional<ChargingStation> result = stationService.getById(1L);
+        assertTrue(result.isPresent());
+        assertEquals("Station A", result.get().getName());
     }
 
     @Test
-    void testGetStationAvailability() {
-        // Simular a resposta do repository para todas as estações
-        when(repository.findAll()).thenReturn(List.of(aveiroStation));
+    void createStation_shouldSetCreatedAtAndSave() {
+        when(stationRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        ChargingStation created = stationService.createStation(station);
+        assertNotNull(created.getCreatedAt());
+        verify(stationRepository).save(station);
+    }
 
-        // Simular a contagem de carregadores disponíveis
-        when(chargerRepository.countByStationIdAndStatus(1L, Charger.ChargerStatus.AVAILABLE))
-                .thenReturn(2L);
+    @Test
+    void deleteStation_shouldCallDeleteById() {
+        stationService.deleteStation(1L);
+        verify(stationRepository).deleteById(1L);
+    }
 
-        // Chamar o método a testar
-        List<StationAvailabilityDTO> result = service.getStationAvailability();
+    @Test
+    void nameExists_shouldReturnTrueIfExists() {
+        when(stationRepository.existsByName("Station A")).thenReturn(true);
+        assertTrue(stationService.nameExists("Station A"));
+    }
 
-        // Verificar os resultados
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getStationId()).isEqualTo(1L);
-        assertThat(result.get(0).getAvailableChargers()).isEqualTo(2L);
+    @Test
+    void getStationsByOperator_shouldReturnList() {
+        when(stationRepository.findByOperatorId(1L)).thenReturn(List.of(station));
+        List<ChargingStation> result = stationService.getStationsByOperator(1L);
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void getStationsNearby_shouldReturnFilteredByDistance() {
+        ChargingStation near = ChargingStation.builder()
+                .id(2L).latitude(38.737).longitude(-9.14).build();
+        ChargingStation far = ChargingStation.builder()
+                .id(3L).latitude(41.0).longitude(-8.0).build();
+
+        when(stationRepository.findAll()).thenReturn(List.of(near, far));
+
+        List<ChargingStation> result = stationService.getStationsNearby(38.7369, -9.1427, 10);
+        assertEquals(1, result.size());
+        assertEquals(2L, result.get(0).getId());
+    }
+
+    @Test
+    void getStationAvailability_shouldReturnDTOs() {
+        when(stationRepository.findAll()).thenReturn(List.of(station));
+        when(chargerRepository.countByStationIdAndStatus(1L, ChargerStatus.AVAILABLE)).thenReturn(3L);
+
+        List<StationAvailabilityDTO> result = stationService.getStationAvailability();
+
+        assertEquals(1, result.size());
+        assertEquals(3L, result.get(0).getAvailableChargers());
+    }
+
+    @Test
+    void getStationStats_shouldReturnStats() {
+        Reservation res = Reservation.builder()
+                .chargerId(1L)
+                .startTime(LocalDateTime.of(2024, 1, 1, 12, 0))
+                .endTime(LocalDateTime.of(2024, 1, 1, 14, 0))
+                .build();
+
+        when(chargerRepository.findByStationId(1L)).thenReturn(List.of(charger));
+        when(reservationRepository.findByChargerIdInAndStartTimeBetween(anyList(), any(), any()))
+                .thenReturn(List.of(res));
+
+        LocalDateTime from = LocalDateTime.of(2024, 1, 1, 11, 0);
+        LocalDateTime to = LocalDateTime.of(2024, 1, 1, 15, 0);
+
+        StationStatsDTO stats = stationService.getStationStats(1L, from, to);
+
+        assertEquals(44.0, stats.energyDeliveredKWh());
+        assertEquals(1, stats.sessions());
+        assertTrue(stats.averageOccupancyPct() > 0);
+    }
+
+    @Test
+    void getStationStats_shouldThrowIfNoChargers() {
+        when(chargerRepository.findByStationId(1L)).thenReturn(List.of());
+        assertThrows(EntityNotFoundException.class,
+                () -> stationService.getStationStats(1L, LocalDateTime.now(), LocalDateTime.now().plusHours(1)));
     }
 }

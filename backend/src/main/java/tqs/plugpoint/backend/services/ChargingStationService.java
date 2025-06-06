@@ -4,15 +4,21 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.time.Duration;
 
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import tqs.plugpoint.backend.dto.StationAvailabilityDTO;
+import tqs.plugpoint.backend.dto.StationStatsDTO;
 import tqs.plugpoint.backend.entities.Charger;
 import tqs.plugpoint.backend.entities.ChargingStation;
+import tqs.plugpoint.backend.entities.Reservation;
 import tqs.plugpoint.backend.repositories.ChargerRepository;
 import tqs.plugpoint.backend.repositories.ChargingStationRepository;
+import tqs.plugpoint.backend.repositories.ReservationRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +26,7 @@ public class ChargingStationService {
 
     private final ChargingStationRepository repository;
     private final ChargerRepository chargerRepository;
+    private final ReservationRepository reservationRepository;
 
     public List<ChargingStation> getAllStations() {
         return repository.findAll();
@@ -83,7 +90,37 @@ public class ChargingStationService {
     }
 
 
-    
+    public StationStatsDTO getStationStats(
+        Long stationId, LocalDateTime from, LocalDateTime to) {
+
+        List<Charger> chargers = chargerRepository.findByStationId(stationId);
+        if (chargers.isEmpty()) throw new EntityNotFoundException("Station not found");
+
+        List<Long> chargerIds = chargers.stream().map(Charger::getId).toList();
+        List<Reservation> reservations =
+            reservationRepository.findByChargerIdInAndStartTimeBetween(chargerIds, from, to);
+
+        double hoursRange = Duration.between(from, to).toMinutes() / 60.0;
+
+        double totalEnergy = 0, timeBooked = 0;
+        Map<Long, Double> powerByCharger = chargers.stream()
+            .collect(Collectors.toMap(Charger::getId, Charger::getPower));
+
+        for (Reservation r : reservations) {
+            LocalDateTime s = r.getStartTime().isBefore(from) ? from : r.getStartTime();
+            LocalDateTime e = r.getEndTime().isAfter(to)     ? to   : r.getEndTime();
+
+            double hours = Duration.between(s, e).toMinutes() / 60.0;
+            timeBooked  += hours;
+            totalEnergy += hours * powerByCharger.get(r.getChargerId());
+        }
+
+        double occupancy = chargers.isEmpty()
+            ? 0 : (timeBooked / (chargers.size() * hoursRange)) * 100;
+
+        return new StationStatsDTO(totalEnergy, reservations.size(), occupancy);
+    }
+
 
 
     
