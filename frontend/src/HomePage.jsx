@@ -3,71 +3,139 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './HomePage.css';
-import { motion, AnimatePresence } from 'framer-motion';
-
-const chargerIconUrl = '/battery-charging.png';
-const getLocUrl = '/getLoc.png';
-
-const getLocIcon = new L.Icon({
-  iconUrl: getLocUrl,
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-});
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const chargerIcon = new L.Icon({
-  iconUrl: chargerIconUrl,
+  iconUrl: '/battery-charging.png',
   iconSize: [40, 40],
   iconAnchor: [20, 40],
 });
+
+const getLocIcon = new L.Icon({
+  iconUrl: '/newcheckpoint.png',
+  iconSize: [70, 70],
+  iconAnchor: [35, 50],
+});
+
+const CITIES = [
+  'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco', 'Coimbra', 'Evora', 'Faro',
+  'Guarda', 'Leiria', 'Lisboa', 'Portalegre', 'Porto', 'Santarem', 'Setubal',
+  'Viana do Castelo', 'Vila Real', 'Viseu', 'Mirandela', 'Valpaços'
+];
+
+const dist = (la1, lo1, la2, lo2) => {
+  const R = 6371, dLat = (la2 - la1) * Math.PI / 180, dLon = (lo2 - lo1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(la1*Math.PI/180) * Math.cos(la2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
 
 export default function HomePage() {
   const [stations, setStations] = useState([]);
-  const [selectedStation, setSelectedStation] = useState(null);
-  const [chargers, setChargers] = useState([]);
-  const [isLoadingChargers, setIsLoadingChargers] = useState(false);
+  const [stationChargers, setStationChargers] = useState({});
+  const [selected, setSelected] = useState(null);
+  const [userLoc, setUserLoc] = useState(null);
+  const [locLabel, setLocLabel] = useState('');
+  const [search, setSearch] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [recent, setRecent] = useState([]);
+  const [showDD, setShowDD] = useState(false);
+  const [typeFilter, setTypeFilter] = useState('');
+  const [powerValue, setPowerValue] = useState(250);
+  const [distanceValue, setDistanceValue] = useState(250);
   const mapRef = useRef(null);
-  const [isFavorited, setIsFavorited] = useState(false);
+
+  const [favorites, setFavorites] = useState(() => {
+    const stored = localStorage.getItem("favorites");
+    return stored ? JSON.parse(stored) : [];
+  });
+  
+  const toggleFavorite = (stationId) => {
+    const updated = favorites.includes(stationId)
+      ? favorites.filter(id => id !== stationId)
+      : [...favorites, stationId];
+  
+    setFavorites(updated);
+    localStorage.setItem("favorites", JSON.stringify(updated));
+  };
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/stations')
-      .then(res => res.json())
-      .then(data => setStations(data))
-      .catch(err => console.error('Failed to fetch stations:', err));
+    fetch(`${baseUrl}/stations`)
+      .then(r => r.json())
+      .then(async data => {
+        setStations(data);
+        const pairs = await Promise.all(
+          data.map(async s => {
+            const r = await fetch(`${baseUrl}/chargers/station/${s.id}`);
+            const ch = await r.json();
+            return [s.id, ch];
+          })
+        );
+        setStationChargers(Object.fromEntries(pairs));
+      });
   }, []);
 
-  const handleMarkerClick = async (station) => {
-    setIsLoadingChargers(true);
-    setSelectedStation(station);
-    
-    try {
-      const response = await fetch(`http://localhost:8080/api/chargers/station/${station.id}`);
-      const chargersData = await response.json();
-      setChargers(chargersData);
-    } catch (err) {
-      console.error('Failed to fetch chargers:', err);
-      setChargers([]);
-    } finally {
-      setIsLoadingChargers(false);
-    }
-
-    if (mapRef.current) {
-      mapRef.current.flyTo(
-        [station.latitude, station.longitude],
-        14,
-        {
-          animate: true,
-          duration: 2.0,
-          easeLinearity: 0.2,
-          noMoveStart: false
-        }
-      );
-    }
+  const refreshDistances = loc => {
+    const upd = stations.map(s => ({
+      ...s,
+      distance: dist(loc.lat, loc.lng, s.latitude, s.longitude)
+    })).sort((a, b) => a.distance - b.distance);
+    setStations(upd);
   };
+
+  const useMyLocation = () => {
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      setUserLoc(loc);
+      refreshDistances(loc);
+      mapRef.current?.flyTo([loc.lat, loc.lng], 12);
+
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${loc.lat}&lon=${loc.lng}`);
+      const d = await r.json();
+      const city = d.address?.city || d.address?.town || 'Localização Atual';
+      setLocLabel(city);
+      addRecent(city);
+      setShowDD(false);
+    }, () => alert('Permissão de localização negada'));
+  };
+
+  const onSearchChange = v => {
+    setSearch(v);
+    setShowDD(true);
+    setSuggestions(CITIES.filter(c => c.toLowerCase().startsWith(v.toLowerCase())));
+  };
+
+  const selectCity = async city => {
+    setSearch('');
+    setLocLabel(city);
+    addRecent(city);
+    setShowDD(false);
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${city},Portugal`);
+    const d = await r.json();
+    if (!d.length) return;
+    const loc = { lat: +d[0].lat, lng: +d[0].lon };
+    setUserLoc(loc);
+    refreshDistances(loc);
+    mapRef.current?.flyTo([loc.lat, loc.lng], 12);
+  };
+
+  const addRecent = city => {
+    setRecent(p => [city, ...p.filter(x => x !== city)].slice(0, 5));
+  };
+
+  const applyFilters = s => {
+    const chargers = stationChargers[s.id] || [];
+    if (typeFilter && !chargers.some(c => c.type === typeFilter)) return false;
+    if (!chargers.some(c => c.power <= powerValue)) return false;
+    if (s.distance && s.distance > distanceValue) return false;
+    return true;
+  };
+
   const createReservation = async (chargerId, stationName, stationAddress, index) => {
-    const userId =1
+    const userId = 1;
     const now = new Date();
     const startTime = now.toISOString();
-    const endTime = new Date(now.getTime() + 60 * 60 * 1000).toISOString(); // +1 hora
+    const endTime = new Date(now.getTime() + 60 * 60 * 1000).toISOString();
 
     const reservationData = {
       userId,
@@ -78,7 +146,7 @@ export default function HomePage() {
     };
 
     try {
-      const response = await fetch('http://localhost:8080/api/reservations', {
+      const response = await fetch(`${baseUrl}/reservations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reservationData),
@@ -92,145 +160,238 @@ export default function HomePage() {
       alert("Erro ao fazer a reserva.");
     }
   };
+
+  const displayed = stations.filter(applyFilters);
+
+  const openDetails = async s => {
+    if (!stationChargers[s.id]) {
+      const r = await fetch(`${baseUrl}/chargers/station/${s.id}`);
+      const ch = await r.json();
+      setStationChargers(prev => ({ ...prev, [s.id]: ch }));
+    }
+    setSelected(s);
+  };
+
   return (
-    <div className="homepage-container">
-      <div className="map-column">
-        <MapContainer
-          center={[39.5, -8.0]}
-          zoom={7}
-          scrollWheelZoom={true}
-          className="map-view"
-          whenCreated={(mapInstance) => { mapRef.current = mapInstance; }}
-        >
-          <TileLayer
-            attribution='&copy; OpenStreetMap contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    <div className="home-container">
+      <div className="map-section">
+        <MapContainer center={[39.5, -8]} zoom={7} ref={mapRef} className="map-view">
+          <TileLayer 
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
           />
-          {stations.map(station => (
-            <Marker
-              key={station.id}
-              position={[station.latitude, station.longitude]}
+          {displayed.map(s => (
+            <Marker 
+              key={s.id} 
+              position={[s.latitude, s.longitude]} 
               icon={chargerIcon}
-              eventHandlers={{ click: () => handleMarkerClick(station) }}
+              eventHandlers={{ click: () => openDetails(s) }}
             />
           ))}
+          {userLoc && (
+            <Marker position={[userLoc.lat, userLoc.lng]} icon={getLocIcon}>
+              <Popup>{locLabel || 'Localização'}</Popup>
+            </Marker>
+          )}
         </MapContainer>
       </div>
 
-      <div className="list-column">
-        <h2>Charging Stations</h2>
-        <div className="station-details-wrapper">
-          <AnimatePresence mode="wait">
-            {selectedStation ? (
-              <motion.div
-                key={selectedStation.id}
-                className="station-details-inner"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.15 }}
-              >
-                <div className="station-details">
-                  <div className="address-directions-container">
-                    <div className="station-address">
-                      <h3>{selectedStation.name}</h3>
-                      <p>{selectedStation.address}</p>
-                    </div>
-                    <div className="station-directions">
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${selectedStation.latitude},${selectedStation.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="directions-button"
-                      >
-                        <img src={getLocUrl} alt="Direções" style={{ width: '60px', height: '60px' }} />
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="station-connections">
-                    {isLoadingChargers ? (
-                      <p>Loading chargers...</p>
-                    ) : chargers.length > 0 ? (
-                      chargers.map((charger, index) => (
-                        <div key={index} className="connection-card">
-                          <div className="charger-info">
-                            <h4>Charger {index + 1}</h4>
-                            <p><strong>Type:</strong> {charger.type}</p>
-                            <p><strong>Power:</strong> {charger.power} kW</p>
-                            <p className={`status ${charger.status === 'AVAILABLE' ? 'available' : 'unavailable'}`}>
-                              {charger.status}
-                            </p>
-                          </div>
-                          <div className="charger-actions">
-                            <button
-                              className="reserve-button"
-                              onClick={() => createReservation(charger.id, selectedStation.name, selectedStation.address, index)}
-                            >
-                              Reserve
-                            </button>
-                           
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p>No chargers available</p>
-                    )}
-                  </div>
-
-                  <div className="station-footer">
-                    <p>🔌 {chargers.length} chargers available</p>
-                    <div className="station-actions">
-
-                      <button
-                        className="favorite-button"
-                        onClick={() => setIsFavorited(prev => !prev)}
-                        title={isFavorited ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                      >
-                        {isFavorited ? (
-                          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="red" viewBox="0 0 24 24">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
-                            2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 
-                            4.5 2.09C13.09 3.81 14.76 3 16.5 
-                            3 19.58 3 22 5.42 22 8.5c0 
-                            3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                          </svg>
-                        ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" stroke="red" strokeWidth="2" viewBox="0 0 24 24">
-                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 
-                            8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 
-                            4.5 2.09C13.09 3.81 14.76 3 16.5 
-                            3 19.58 3 22 5.42 22 8.5c0 
-                            3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                          </svg>
-                        )}
-                      </button>
-                    </div>    
+      <div className="panel-section">
+        <div className="search-card">
+          <div className="search-container">
+            <div className="search-input-wrapper">
+              <i className="icon-search"></i>
+              <input
+                value={search}
+                onChange={e => onSearchChange(e.target.value)}
+                onFocus={() => setShowDD(true)}
+                placeholder="Pesquisar localização..."
+                className="search-input"
+              />
+            </div>
+            
+            {showDD && (
+              <div className="dropdown-menu">
+                <div className="dropdown-section">
+                  <h4>Localização Atual</h4>
+                  <div className="dropdown-item" onClick={useMyLocation}>
+                    <i className="icon-location"></i> Usar minha localização
                   </div>
                 </div>
-              </motion.div>
-            ) : (
-              <motion.ul
-                key="station-list"
-                className="station-list"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {stations.map(station => (
-                  <li key={station.id} className="station-item">
-                    <h3>{station.name}</h3>
-                    <p>{station.address}</p>
-                    <button onClick={() => handleMarkerClick(station)}>
-                      View Details
-                    </button>
-                  </li>
-                ))}
-              </motion.ul>
+                
+                {recent.length > 0 && (
+                  <div className="dropdown-section">
+                    <h4>Recentes</h4>
+                    {recent.map((c, i) => (
+                      <div key={`recent-${i}`} className="dropdown-item" onClick={() => selectCity(c)}>
+                        <i className="icon-clock"></i> {c}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {suggestions.length > 0 && (
+                  <div className="dropdown-section">
+                    <h4>Cidades</h4>
+                    {suggestions.map((c, i) => (
+                      <div key={`sug-${i}`} className="dropdown-item" onClick={() => selectCity(c)}>
+                        <i className="icon-city"></i> {c}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
-          </AnimatePresence>
+          </div>
+
+          {locLabel && (
+            <div className="location-label">
+              <i className="icon-pin"></i>
+              <span>Mostrando resultados próximos de <strong>{locLabel}</strong></span>
+            </div>
+          )}
+
+          <div className="filters-container">
+            <h4 className="filters-title">Filtros</h4>
+            
+            <div className="filter-group">
+              <label>Tipo de Carregador</label>
+              <select
+                value={typeFilter}
+                onChange={e => setTypeFilter(e.target.value)}
+                className="filter-select"
+              >
+                <option value="">Todos</option>
+                <option value="TYPE2">TYPE2</option>
+                <option value="CHADEMO">CHADEMO</option>
+                <option value="CCS">CCS</option>
+                <option value="TESLA">TESLA</option>
+                <option value="AC">AC</option>
+                <option value="DC">DC</option>
+              </select>
+            </div>
+            
+            <div className="filter-group">
+              <label>Potência Mínima: <span>{powerValue} kW</span></label>
+              <input
+                type="range"
+                min="0"
+                max="250"
+                value={powerValue}
+                onChange={e => setPowerValue(+e.target.value)}
+                className="filter-slider"
+              />
+            </div>
+            
+            <div className="filter-group">
+              <label>Distância Máxima: <span>{distanceValue} km</span></label>
+              <input
+                type="range"
+                min="0"
+                max="250"
+                value={distanceValue}
+                onChange={e => setDistanceValue(+e.target.value)}
+                className="filter-slider"
+              />
+            </div>
+            
+            <button 
+              className="clear-filters-btn"
+              onClick={() => {
+                setTypeFilter('');
+                setPowerValue(250);
+                setDistanceValue(250);
+              }}
+            >
+              Limpar Filtros
+            </button>
+          </div>
         </div>
+
+        {selected ? (
+          <div className="station-details-card">
+            <div className="station-header">
+              <div>
+                <h3>{selected.name}</h3>
+                <p className="station-address">{selected.address}</p>
+              </div>
+              <button 
+                className="favorite-btn"
+                onClick={() => toggleFavorite(selected.id)}
+              >
+                <i className={favorites.includes(selected.id) ? "icon-heart-filled" : "icon-heart"}></i>
+              </button>
+            </div>
+            
+            <div className="chargers-list">
+              <h4>Carregadores Disponíveis</h4>
+              {(stationChargers[selected.id] || []).map((c, i) => (
+                <div key={i} className="charger-card">
+                  <div className="charger-info">
+                    <div className="charger-type">
+                      <i className="icon-charger"></i>
+                      <span>Carregador {i+1}</span>
+                    </div>
+                    <div className="charger-specs">
+                      <span><strong>Tipo:</strong> {c.type}</span>
+                      <span><strong>Potência:</strong> {c.power} kW</span>
+                    </div>
+                    <span className={`status ${c.status === 'AVAILABLE' ? 'available' : 'unavailable'}`}>
+                      {c.status === 'AVAILABLE' ? 'Disponível' : 'Indisponível'}
+                    </span>
+                  </div>
+                  <button 
+                    className="reserve-btn"
+                    onClick={() => createReservation(c.id, selected.name, selected.address, i)}
+                    disabled={c.status !== 'AVAILABLE'}
+                  >
+                    Reservar
+                  </button>
+                </div>
+              ))}
+            </div>
+            
+            <button 
+              className="back-btn"
+              onClick={() => setSelected(null)}
+            >
+              <i className="icon-arrow-left"></i> Voltar à lista
+            </button>
+          </div>
+        ) : (
+          <div className="stations-list">
+            {displayed.length === 0 ? (
+              <div className="empty-state">
+                <i className="icon-warning"></i>
+                <p>Nenhuma estação corresponde aos filtros aplicados</p>
+              </div>
+            ) : (
+              displayed.map(s => (
+                <div 
+                  key={s.id} 
+                  className="station-card"
+                  onClick={() => openDetails(s)}
+                >
+                  <div className="station-info">
+                    <h4>{s.name}</h4>
+                    <p>{s.address}</p>
+                    {s.distance && (
+                      <div className="distance-badge">
+                        <i className="icon-distance"></i>
+                        {s.distance.toFixed(1)} km
+                      </div>
+                    )}
+                  </div>
+                  <div className="station-actions">
+                    <button className="details-btn">
+                      Ver detalhes <i className="icon-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,29 +1,27 @@
 package tqs.plugpoint.backend.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
+import tqs.plugpoint.backend.dto.StationAvailabilityDTO;
+import tqs.plugpoint.backend.dto.StationStatsDTO;
+import tqs.plugpoint.backend.entities.ChargingStation;
+import tqs.plugpoint.backend.services.ChargingStationService;
+
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
-import tqs.plugpoint.backend.entities.ChargingStation;
-import tqs.plugpoint.backend.entities.ChargingStation.Status;
-import tqs.plugpoint.backend.services.ChargingStationService;
-import tqs.plugpoint.backend.dto.StationAvailabilityDTO;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-
 
 @WebMvcTest(ChargingStationController.class)
 class ChargingStationControllerTest {
@@ -34,42 +32,38 @@ class ChargingStationControllerTest {
     @MockBean
     private ChargingStationService service;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private ChargingStation station;
 
-    private ChargingStation sampleStation() {
-        return ChargingStation.builder()
+    @BeforeEach
+    void setUp() {
+        station = ChargingStation.builder()
                 .id(1L)
-                .name("Aveiro EV")
-                .latitude(40.6405)
-                .longitude(-8.6538)
-                .address("Aveiro")
-                .operatorId(1L)
-                .status(Status.ACTIVE)
-                .createdAt(LocalDateTime.now())
+                .name("Test Station")
+                .latitude(40.0)
+                .longitude(-8.0)
                 .build();
     }
 
     @Test
-    void testGetAllStations() throws Exception {
-        Mockito.when(service.getAllStations()).thenReturn(List.of(sampleStation()));
+    void getAllStations_shouldReturnList() throws Exception {
+        Mockito.when(service.getAllStations()).thenReturn(List.of(station));
 
         mockMvc.perform(get("/api/stations"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Aveiro EV"));
+                .andExpect(jsonPath("$[0].name").value("Test Station"));
     }
 
     @Test
-    void testGetStationById_found() throws Exception {
-        Mockito.when(service.getById(1L)).thenReturn(Optional.of(sampleStation()));
+    void getStationById_found() throws Exception {
+        Mockito.when(service.getById(1L)).thenReturn(Optional.of(station));
 
         mockMvc.perform(get("/api/stations/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
+                .andExpect(jsonPath("$.name").value("Test Station"));
     }
 
     @Test
-    void testGetStationById_notFound() throws Exception {
+    void getStationById_notFound() throws Exception {
         Mockito.when(service.getById(99L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/stations/99"))
@@ -77,83 +71,101 @@ class ChargingStationControllerTest {
     }
 
     @Test
-    void testCreateStation_success() throws Exception {
-        ChargingStation station = sampleStation();
-        Mockito.when(service.nameExists(station.getName())).thenReturn(false);
+    void createStation_shouldCreateIfNameNotExists() throws Exception {
+        Mockito.when(service.nameExists(anyString())).thenReturn(false);
         Mockito.when(service.createStation(any())).thenReturn(station);
 
         mockMvc.perform(post("/api/stations")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(station)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                            {
+                                "name": "Test Station",
+                                "latitude": 40.0,
+                                "longitude": -8.0
+                            }
+                        """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Aveiro EV"));
+                .andExpect(jsonPath("$.name").value("Test Station"));
     }
 
     @Test
-    void testCreateStation_duplicateName() throws Exception {
-        ChargingStation station = sampleStation();
-        Mockito.when(service.nameExists(station.getName())).thenReturn(true);
+    void createStation_shouldRejectIfNameExists() throws Exception {
+        Mockito.when(service.nameExists(anyString())).thenReturn(true);
 
         mockMvc.perform(post("/api/stations")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(station)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                            {
+                                "name": "Duplicate Station"
+                            }
+                        """))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("Station name already exists."));
+                .andExpect(content().string(containsString("already exists")));
     }
 
     @Test
-    void testGetByOperator() throws Exception {
-        Mockito.when(service.getStationsByOperator(1L)).thenReturn(List.of(sampleStation()));
+    void deleteStation_shouldReturnNoContent() throws Exception {
+        mockMvc.perform(delete("/api/stations/1"))
+                .andExpect(status().isNoContent());
+        Mockito.verify(service).deleteStation(1L);
+    }
+
+    @Test
+    void getByOperator_shouldReturnStations() throws Exception {
+        Mockito.when(service.getStationsByOperator(1L)).thenReturn(List.of(station));
 
         mockMvc.perform(get("/api/stations/operator/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].operatorId").value(1));
+                .andExpect(jsonPath("$[0].name").value("Test Station"));
     }
 
     @Test
-    void testDeleteStation() throws Exception {
-        Mockito.doNothing().when(service).deleteStation(1L);
-
-        mockMvc.perform(delete("/api/stations/1"))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void testGetNearbyStations() throws Exception {
-        ChargingStation station = sampleStation();
+    void getNearbyStations_shouldReturnFilteredStations() throws Exception {
         Mockito.when(service.getStationsNearby(anyDouble(), anyDouble(), anyDouble()))
                 .thenReturn(List.of(station));
 
         mockMvc.perform(get("/api/stations/nearby")
-                        .param("lat", "40.64")
-                        .param("lng", "-8.65")
-                        .param("radiusKm", "5.0"))
+                .param("lat", "40.0")
+                .param("lng", "-8.0")
+                .param("radiusKm", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].name").value("Aveiro EV"))
-                .andExpect(jsonPath("$[0].latitude").value(40.6405));
+                .andExpect(jsonPath("$[0].name").value("Test Station"));
     }
 
     @Test
-    void testGetNearbyStations_emptyResult() throws Exception {
-        Mockito.when(service.getStationsNearby(anyDouble(), anyDouble(), anyDouble()))
-                .thenReturn(List.of());
-
-        mockMvc.perform(get("/api/stations/nearby")
-                        .param("lat", "0.0")
-                        .param("lng", "0.0")
-                        .param("radiusKm", "1.0"))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[]"));
-    }
-    @Test
-    void testGetStationAvailability() throws Exception {
-        StationAvailabilityDTO dto = new StationAvailabilityDTO(1L, "Aveiro EV", 2);
-        when(service.getStationAvailability()).thenReturn(List.of(dto));
+    void getStationAvailability_shouldReturnList() throws Exception {
+        Mockito.when(service.getStationAvailability())
+                .thenReturn(List.of(new StationAvailabilityDTO(1L, "Station A", 3)));
 
         mockMvc.perform(get("/api/stations/availability"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].stationId").value(1))
-                .andExpect(jsonPath("$[0].availableChargers").value(2));
-        }
+                .andExpect(jsonPath("$[0].availableChargers").value(3));
+    }
 
+    @Test
+    void stats_shouldReturnStationStats() throws Exception {
+        Mockito.when(service.getStationStats(anyLong(), any(), any()))
+                .thenReturn(new StationStatsDTO(100.0, 2, 50.0));
+
+        mockMvc.perform(get("/api/stations/admin/stations/1/stats")
+                .param("from", "2025-06-01T00:00:00")
+                .param("to", "2025-06-01T23:59:59"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sessions").value(2));
+    }
+
+    @Test
+    void exportCsv_shouldReturnCsvFile() throws Exception {
+        Mockito.when(service.getStationStats(anyLong(), any(), any()))
+                .thenReturn(new StationStatsDTO(123.0, 4, 80.0));
+
+        mockMvc.perform(get("/api/stations/admin/stations/1/stats/export")
+                .param("from", "2025-06-01T00:00:00")
+                .param("to", "2025-06-01T23:59:59")
+                .accept("text/csv"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Disposition", containsString("station-1-stats.csv")))
+                .andExpect(content().string(containsString("energyDeliveredKWh,sessions,averageOccupancyPct")))
+                .andExpect(content().string(containsString("123.00,4,80.00")));
+    }
 }

@@ -1,42 +1,110 @@
-#root {
+/* --- RESET E BASE --- */
+html,
+body {
   margin: 0;
   padding: 0;
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  font-family: 'Inter', sans-serif;
 }
 
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+/* --- APP CONTAINER GLOBAL --- */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+/* --- NAVBAR --- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  background-color: #2e8b57;
+  color: white;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.navbar-title {
+  font-weight: bold;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
+.navbar-links {
+  display: flex;
+  gap: 1.5rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  position: relative;
 }
 
+.nav-link:hover {
+  opacity: 0.9;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: white;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* --- MAIN CONTENT AREA --- */
+.page-content {
+  flex: 1;
+  background-color: #f8fafc;
+}
+
+/* --- PAGE-SPECIFIC WRAPPERS --- */
+.home-page-wrapper,
+.admin-page-wrapper,
+.reservations-page-wrapper,
+.trip-planner-wrapper,
+.favorites-page-wrapper {
+  height: 100%;
+}
+
+/* Isolation of styles for each page */
+.home-page-wrapper {
+  isolation: isolate;
+}
+
+.admin-page-wrapper {
+  isolation: isolate;
+}
+
+.reservations-page-wrapper {
+  isolation: isolate;
+}
+
+.trip-planner-wrapper {
+  isolation: isolate;
+}
+
+.favorites-page-wrapper {
+  isolation: isolate;
+}
+
+/* --- UTILITY CLASSES --- */
 .card {
   padding: 2em;
 }
@@ -45,57 +113,7 @@
   color: #888;
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  /* impede scroll */
-  height: 100%;
-}
-
-.app-container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f0f8ff;
-}
-
-.homepage-container {
-  flex: 1;
-  display: flex;
-  max-height: calc(100vh - 70px);
-  /* altura ajustada considerando navbar */
-  margin: 0 auto;
-  width: 100%;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 50px;
-  background-color: #2e8b57;
-  color: white;
-  padding: 0 1rem;
-}
-
-.navbar a {
-  color: white;
-  margin-left: 1rem;
-  text-decoration: none;
-}
-
-.navbar a:hover {
-  text-decoration: underline;
-}
-
-
-.navbar-title {
-  font-weight: bold;
-  font-size: 1.2rem;
+/* Remove default Vite styles */
+.logo {
+  display: none;
 }
