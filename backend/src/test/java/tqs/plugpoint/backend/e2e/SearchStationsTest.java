@@ -16,7 +16,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
+import org.openqa.selenium.firefox.FirefoxDriver;
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -25,23 +25,12 @@ public class SearchStationsTest {
     private WebDriver driver;
     private WebDriverWait wait;
 
-    @BeforeAll
-    void setupClass() {
-        // Garante a versão correta do driver para o Chrome 134
-        WebDriverManager.chromedriver()
-                .browserVersion("134.0.6998.88")
-                .setup();
-    }
-
     @BeforeEach
     void setupTest() {
-        // Usa o ChromeDriver instalado no sistema
-        System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
-
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
-        driver = new ChromeDriver(options);
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        // Configuração do WebDriver para o Firefox
+        WebDriverManager.firefoxdriver().setup();
+        driver = new FirefoxDriver();
+        wait = new WebDriverWait(driver, Duration.ofSeconds(10));        
     }
 
 
