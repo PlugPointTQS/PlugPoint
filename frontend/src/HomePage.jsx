@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import './HomePage.css';
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
+
 const chargerIcon = new L.Icon({
   iconUrl: '/battery-charging.png',
   iconSize: [40, 40],

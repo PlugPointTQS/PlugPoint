@@ -1,4 +1,4 @@
-package tqs.plugpoint.backend.controllers;   // <-- ajusta ao teu package
+package tqs.plugpoint.backend.controllers; // <-- ajusta ao teu package
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,6 +17,9 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
 @RequestMapping("/api/admin/stations")
@@ -26,6 +29,12 @@ public class StatisticsController {
     private StatisticsService statisticsService;
 
     /** JSON – estatísticas agregadas */
+    @Operation(summary = "Get station aggregated stats", description = "Fetches the aggregated statistics of a charging station within the given date range.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved the station statistics."),
+            @ApiResponse(responseCode = "400", description = "Invalid date format or station ID."),
+            @ApiResponse(responseCode = "404", description = "Station not found with the provided ID."),
+    })
     @GetMapping("/{id}/stats")
     public StationStatsDTO getStationStats(
             @PathVariable Long id,
@@ -36,6 +45,12 @@ public class StatisticsController {
     }
 
     /** CSV – download */
+    @Operation(summary = "Export station statistics to CSV", description = "Exports the station statistics for a given date range to a CSV file.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully exported the station statistics to CSV."),
+            @ApiResponse(responseCode = "400", description = "Invalid date format or station ID."),
+            @ApiResponse(responseCode = "500", description = "Error generating the CSV file.")
+    })
     @GetMapping(value = "/{id}/stats/export", produces = "text/csv")
     public void exportStationStatsCsv(
             @PathVariable Long id,
@@ -60,6 +75,12 @@ public class StatisticsController {
         }
     }
 
+    @Operation(summary = "Get daily energy stats", description = "Fetches the daily energy statistics of a station within a given date range.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved the daily energy statistics."),
+            @ApiResponse(responseCode = "400", description = "Invalid date format or station ID."),
+            @ApiResponse(responseCode = "404", description = "Station not found with the provided ID."),
+    })
     @GetMapping("/{id}/stats/daily-energy")
     public ResponseEntity<List<DailyEnergyDTO>> getDailyEnergy(
             @PathVariable Long id,
@@ -69,5 +90,4 @@ public class StatisticsController {
         List<DailyEnergyDTO> result = statisticsService.getDailyEnergyByStation(id, from, to);
         return ResponseEntity.ok(result);
     }
-
 }
