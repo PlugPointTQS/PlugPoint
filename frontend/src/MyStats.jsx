@@ -56,7 +56,7 @@ export default function MyStats() {
             chargerMapTemp[chargerId] = charger;
 
             if (charger.stationId && !stationMapTemp[charger.stationId]) {
-              const stationRes = await fetch(`http://localhost:8080/api/stations/${charger.stationId}`);
+              const stationRes = await fetch(`${baseUrl}/stations/${charger.stationId}`);
               const station = await stationRes.json();
               stationMapTemp[charger.stationId] = station;
             }

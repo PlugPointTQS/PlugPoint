@@ -6,7 +6,6 @@ import './AdminPage.css';
 import StationStatsPanel from './components/StationStatsPanel';
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-
 const chargerIcon = new L.Icon({
   iconUrl: '/battery-charging.png',
   iconSize: [40, 40],
@@ -27,6 +26,7 @@ const AdminPage = () => {
   const [showStats, setShowStats] = useState(false);
   const [statsStationId, setStatsStationId] = useState(null);
   useEffect(() => {
+    console.log(baseUrl) ;
     fetch(`${baseUrl}/stations`)
       .then((res) => res.json())
       .then((data) => setStations(data))

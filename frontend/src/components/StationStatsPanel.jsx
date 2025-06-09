@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatISO, subDays, format } from 'date-fns';
 import './StationStatsPanel.css'; // Import your CSS styles
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
 
 const StationStatsPanel = ({ stationId, onClose }) => {
   const [range, setRange] = useState({
@@ -22,12 +24,12 @@ const StationStatsPanel = ({ stationId, onClose }) => {
         const q = new URLSearchParams({ from: range.from, to: range.to }).toString();
 
         // fetch estatísticas totais
-        const res = await fetch(`http://localhost:8080/api/admin/stations/${stationId}/stats?${q}`);
+        const res = await fetch(`${baseUrl}/admin/stations/${stationId}/stats?${q}`);
         if (!res.ok) throw new Error('Falha a obter estatísticas');
         setStats(await res.json());
 
         // fetch energia diária
-        const energyRes = await fetch(`http://localhost:8080/api/admin/stations/${stationId}/stats/daily-energy?${q}`);
+        const energyRes = await fetch(`${baseUrl}/admin/stations/${stationId}/stats/daily-energy?${q}`);
         if (!energyRes.ok) throw new Error('Falha a obter energia por dia');
         const daily = await energyRes.json();
 
@@ -48,7 +50,7 @@ const StationStatsPanel = ({ stationId, onClose }) => {
 
   const handleExport = async () => {
     const q = new URLSearchParams({ from: range.from, to: range.to }).toString();
-    const res = await fetch(`http://localhost:8080/api/admin/stations/${stationId}/stats/export?${q}`);
+    const res = await fetch(`${baseUrl}/admin/stations/${stationId}/stats/export?${q}`);
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
